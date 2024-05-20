@@ -12,7 +12,7 @@ jobs:
         unreleased: ['ON', 'OFF']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
@@ -46,7 +46,7 @@ jobs:
             - {compiler: '11', standard: '20'}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
@@ -78,7 +78,7 @@ jobs:
             - {compiler: 'g++-7', standard: '20'}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
@@ -117,7 +117,7 @@ jobs:
             - {compiler: '9',   standard: '20'}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
@@ -146,7 +146,7 @@ jobs:
 #        unreleased: ['ON', 'OFF']
 #    steps:
 #      - name: Checkout
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          submodules: true
 #      - name: Install
@@ -171,12 +171,14 @@ jobs:
         unreleased: ['ON', 'OFF']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
         run: |
             brew install boost
+        env:
+          HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: 1
       - name: Configure
         run: |
             mkdir build && cd build
@@ -196,33 +198,7 @@ jobs:
         unreleased: ['ON', 'OFF']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-      - name: Install
-        run: |
-            brew install boost
-      - name: Configure
-        run: |
-            mkdir build && cd build
-            cmake .. -Dtoml11_BUILD_TEST=ON -DCMAKE_CXX_STANDARD=${{ matrix.standard }} -DTOML11_USE_UNRELEASED_TOML_FEATURES=${{ matrix.unreleased }}
-      - name: Build
-        run: |
-            cd build && cmake --build .
-      - name: Test
-        run: |
-            cd build && ctest --output-on-failure
-
-
-  build-osx-11:
-    runs-on: macos-11
-    strategy:
-      matrix:
-        standard: ['11', '14', '17', '20']
-        unreleased: ['ON', 'OFF']
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
@@ -248,7 +224,7 @@ jobs:
         unreleased: ['ON', 'OFF']
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: true
       - name: Install
