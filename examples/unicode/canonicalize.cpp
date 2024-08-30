@@ -4,6 +4,11 @@
 #include <iostream>
 #include <map>
 
+#include "monolithic_examples.h"
+
+namespace
+{
+
 struct nfc_comparator
 {
     using first_argument_type  = std::string;
@@ -63,6 +68,7 @@ struct nfc_config
     }
 };
 
+}
 
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_canonicalize_example_main

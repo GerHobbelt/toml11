@@ -1,7 +1,15 @@
+#include <toml.hpp>
+
 #include <iostream>
 
-#include <reflect>
+#include <boost-ext/reflect.hpp>
+
 #include "reflect.hpp"
+
+#include "monolithic_examples.h"
+
+namespace
+{
 
 struct Hoge
 {
@@ -11,12 +19,14 @@ struct Hoge
 };
 TOML11_REFLECT(Hoge)
 
+}
+
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_reflect_example_main
 #endif
 
 extern "C"
-int main()
+int main(void)
 {
     toml::value v(toml::table{
             {"foo", 42},

@@ -5,6 +5,10 @@
 
 #include <iostream>
 
+#include "monolithic_examples.h"
+
+namespace {
+
 struct boost_config
 {
     using comment_type  = toml::preserve_comments;
@@ -30,6 +34,8 @@ struct boost_config
         return toml::read_float<floating_type>(str, src, is_hex);
     }
 };
+
+}
 
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_boost_container_example_main

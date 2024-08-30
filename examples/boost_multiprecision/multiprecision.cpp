@@ -4,6 +4,11 @@
 
 #include <toml.hpp>
 
+#include "monolithic_examples.h"
+
+namespace
+{
+
 struct large_num_config
 {
     using comment_type  = toml::preserve_comments;
@@ -30,12 +35,14 @@ struct large_num_config
     }
 };
 
+}
+
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_boost_multiprecision_example_main
 #endif
 
 extern "C"
-int main()
+int main(void)
 {
     const std::string input_str(R"(
 large_int_dec = 10_000_000_000_000_000_000

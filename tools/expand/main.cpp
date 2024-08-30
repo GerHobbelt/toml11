@@ -10,6 +10,11 @@
 
 #include <cassert>
 
+#include "monolithic_examples.h"
+
+namespace
+{
+
 std::optional<std::filesystem::path>
 is_include(const std::string& line, const std::filesystem::path& filepath)
 {
@@ -113,6 +118,8 @@ struct Graph
 
     std::map<std::filesystem::path, Node> nodes;
 };
+
+}
 
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_expand_tool_main

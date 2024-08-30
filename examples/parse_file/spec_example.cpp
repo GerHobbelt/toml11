@@ -5,12 +5,14 @@
 
 #include <cassert>
 
+#include "monolithic_examples.h"
+
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_parse_spec_example_main
 #endif
 
 extern "C"
-int main()
+int main(void)
 {
     const auto root = toml::parse("spec_example.toml");
 

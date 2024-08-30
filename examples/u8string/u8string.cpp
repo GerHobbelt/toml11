@@ -5,6 +5,11 @@
 
 #include <cassert>
 
+#include "monolithic_examples.h"
+
+namespace
+{
+
 struct u8config
 {
     using comment_type  = toml::preserve_comments;
@@ -31,12 +36,14 @@ struct u8config
     }
 };
 
+}
+
 #if defined(BUILD_MONOLITHIC)
 #define main     toml11_u8string_example_main
 #endif
 
 extern "C"
-int main()
+int main(void)
 {
     const auto root = toml::parse<u8config>("spec_example.toml");
 
