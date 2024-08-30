@@ -3,7 +3,12 @@
 #include <iomanip>
 #include <iostream>
 
-int main(int argc, char **argv)
+#if defined(BUILD_MONOLITHIC)
+#define main    toml11_check_serialization_test_main
+#endif
+
+extern "C"
+int main(int argc, const char** argv)
 {
     if(argc != 2)
     {

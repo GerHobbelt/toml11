@@ -111,6 +111,11 @@ struct json_serializer
     }
 };
 
+#if defined(BUILD_MONOLITHIC)
+#define main    toml11_check_toml_test_main
+#endif
+
+extern "C"
 int main()
 {
     try

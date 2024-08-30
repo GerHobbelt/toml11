@@ -2,6 +2,11 @@
 
 int read_a(const toml::table&);
 
+#if defined(BUILD_MONOLITHIC)
+#define main    toml11_multiple_translation_units_test_main
+#endif
+
+extern "C"
 int main()
 {
     const std::string content("a = 0");
