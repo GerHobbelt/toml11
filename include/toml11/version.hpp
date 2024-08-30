@@ -2,7 +2,7 @@
 #define TOML11_VERSION_HPP
 
 #define TOML11_VERSION_MAJOR 4
-#define TOML11_VERSION_MINOR 1
+#define TOML11_VERSION_MINOR 2
 #define TOML11_VERSION_PATCH 0
 
 #ifndef __cplusplus
@@ -74,6 +74,12 @@
 #    if __has_include(<filesystem>)
 #      define TOML11_HAS_FILESYSTEM 1
 #    endif
+#  endif
+#endif
+
+#if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
+#  if __has_include(<optional>)
+#    define TOML11_HAS_OPTIONAL 1
 #  endif
 #endif
 

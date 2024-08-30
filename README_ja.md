@@ -114,6 +114,19 @@ add_executable(main main.cpp)
 target_link_libraries(main PRIVATE toml11::toml11)
 ```
 
+### CMake Package Manager (CPM)
+
+[CMake package manager](https://github.com/cpm-cmake/CPM.cmake)を導入すると、以下のようにして使用することができます。
+
+```cmake
+include(cmake/CPM.cmake)
+
+CPMAddPackage("gh:ToruNiina/toml11@4.1.0")
+
+add_executable(main main.cpp)
+target_link_libraries(main PUBLIC toml11::toml11)
+```
+
 ### Install using CMake
 
 以下の手順で、CMakeを使ってインストールすることができます。
@@ -482,10 +495,20 @@ std::cout << toml::format(output) << std::endl;
 
 `toml::value`が持つ型の多く、`integer_type`や`array_type`などは`type_config`型を変更することで変更可能です。
 
+よくある例として、値を追加した順序を保つ`map`型である`ordered_map`を使うというものがあります。
+toml11は`toml::ordered_map`を使用する`type_config`型として、`toml::ordered_type_config`を提供しています。
+
+```cpp
+const toml::ordered_value input = toml::parse<toml::ordered_type_config>("input.toml");
+```
+
+ここで、`toml::ordered_value`は`toml::basic_value<toml::ordered_type_config>`のエイリアスです。
+
+ただし、`toml::value`は`std::unordered_map`を使用しているため、一度`toml::ordered_value`から`toml::value`に変換してしまうと、順序は失われてしまうことに注意してください。
+
 [`examples`ディレクトリ](https://github.com/ToruNiina/toml11/tree/main/examples)には、
 多倍長整数を使用する場合やコンテナを変更する場合、ユニコードを正規化する場合などの複雑な使用例を用意しています。
-
-そのような状況での実装例として参照してください。
+`type_config`を実装する際の例として参照してください。
 
 ## Examples
 
@@ -633,6 +656,10 @@ toml11 v3からは複数の破壊的変更が追加されています。
   - Fix not checking for \r\n when parsing line comments
 - 萧迩珀 (@CDK6182CHR)
   - Support template into_toml members
+- Pino Toscano (@pinotree)
+  - Suppress warnings by manually cast file size to `std::streamsize`
+- Jack W (@jackwil1)
+  - Fix typos in documentation template syntax
 
 ## Licensing terms
 

@@ -109,12 +109,25 @@ include(FetchContent)
 FetchContent_Declare(
   toml11
   GIT_REPOSITORY https://github.com/ToruNiina/toml11.git
-  GIT_TAG        v4.0.3
+  GIT_TAG        v4.1.0
 )
 FetchContent_MakeAvailable(toml11)
 
 add_executable(main main.cpp)
 target_link_libraries(main PRIVATE toml11::toml11)
+```
+
+### CMake Package Manager (CPM)
+
+After [adding cpm to your project](https://github.com/cpm-cmake/CPM.cmake?tab=readme-ov-file#adding-cpm), you can use toml11 by doing:
+
+```cmake
+include(cmake/CPM.cmake)
+
+CPMAddPackage("gh:ToruNiina/toml11@4.1.0")
+
+add_executable(main main.cpp)
+target_link_libraries(main PUBLIC toml11::toml11)
 ```
 
 ### Install Using CMake
@@ -480,10 +493,22 @@ For details on possible formatting specifications, please refer to the [document
 
 ### Configuring Types
 
-Many types held by `toml::value`, such as `integer_type` and `array_type`, can be modified by changing the `type_config` type.
+Many types in `toml::value`, such as `integer_type`, `array_type`, `table_type`, etc, can be modified by changing the `type_config` type.
 
-Refer to the [`examples` directory](https://github.com/ToruNiina/toml11/tree/main/examples) for complex use cases such as using multi-precision integers, changing containers, and normalizing Unicode.
+One commonly used example is an `ordered_map` that keeps the added order.
+toml11 provides a`type_config` that changes `table_type` to `ordered_map` as `toml::ordered_type_config`.
 
+```cpp
+const toml::ordered_value input = toml::parse<toml::ordered_type_config>("input.toml");
+```
+
+Here, `toml::ordered_value` is an alias of `toml::basic_value<toml::ordered_type_config>`.
+
+Note that, since `toml::value` uses `std::unordered_map`, once you convert it to `toml::value`, then the order of the values will be randomized.
+
+For more details about how to implement `type_config` variant, please refer to the [documentation](https://toruniina.github.io/toml11/docs/features/configure_types/).
+
+Also, refer to the [`examples` directory](https://github.com/ToruNiina/toml11/tree/main/examples) for complex use cases such as using multi-precision integers, changing containers, and normalizing Unicode.
 Use these examples as references for implementing such configurations.
 
 ## Examples
@@ -593,6 +618,8 @@ I appreciate the help of the contributors who introduced the great feature to th
 - Ken Matsui (@ken-matsui)
   - Support user-defined error message prefix
   - Support dynamic color mode
+  - Support `std::optional` members for `TOML11_DEFINE_CONVERSION_NON_INTRUSIVE`
+  - Make `thread_local` for `color_mode` optional
 - Giel van Schijndel (@muggenhor)
   - Remove needless copy in `parse` function
 - Lukáš Hrázký (@lukash)
@@ -631,6 +658,10 @@ I appreciate the help of the contributors who introduced the great feature to th
   - Fix not checking for \r\n when parsing line comments
 - 萧迩珀 (@CDK6182CHR)
   - Support template into_toml members
+- Pino Toscano (@pinotree)
+  - Suppress warnings by manually cast file size to `std::streamsize`
+- Jack W (@jackwil1)
+  - Fix typos in documentation template syntax
 
 ## Licensing terms
 
