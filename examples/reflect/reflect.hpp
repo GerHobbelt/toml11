@@ -1,7 +1,7 @@
 #ifndef TOML11_REFLECT_HPP
 #define TOML11_REFLECT_HPP
 
-#include <reflect> // boost-ext/reflect
+#include <boost-ext/reflect.hpp>
 
 #include <toml.hpp>
 
@@ -36,7 +36,7 @@ basic_value<TC> into(const T& x)
 } // refl
 } // toml
 
-#define TOML11_REFLECT(X) \
+#define TOML11_REFLECT(X)                                  \
     namespace toml {                                       \
     template<>                                             \
     struct into<X>                                         \
