@@ -141,6 +141,7 @@ BOOST_AUTO_TEST_CASE(test_example_stream)
 BOOST_AUTO_TEST_CASE(test_example_file_pointer)
 {
     FILE * file = fopen(testinput("example.toml").c_str(), "rb");
+    BOOST_TEST_REQUIRE(file != nullptr);
     const auto data = toml::parse(file, "toml/tests/example.toml");
     fclose(file);
 
