@@ -14,11 +14,13 @@ string(REGEX REPLACE "#define TOML11_VERSION_PATCH ([0-9]+)" "\\1" TOML11_VERSIO
 
 project(toml11 LANGUAGES CXX VERSION "${TOML11_VERSION_MAJOR}.${TOML11_VERSION_MINOR}.${TOML11_VERSION_PATCH}")
 
-include(CMakeDependentOption)
-include(CTest)
+include(CTest) # to use ${BUILD_TESTING}
 
 option(TOML11_PRECOMPILE "precompile toml11 library" OFF)
 
+include(CMakeDependentOption)
+cmake_policy(PUSH)
+cmake_policy(SET CMP0127 OLD) # syntax of condition changed in 3.22
 cmake_dependent_option(TOML11_INSTALL "install toml11 library" ON
     "${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME}" OFF)
 cmake_dependent_option(TOML11_BUILD_EXAMPLES "build toml11 examples" OFF
@@ -27,6 +29,8 @@ cmake_dependent_option(TOML11_BUILD_TESTS "build toml11 unit tests" OFF
     "${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME}; ${BUILD_TESTING}" OFF)
 cmake_dependent_option(TOML11_BUILD_TOML_TESTS "build toml11 toml-test encoder & decoder" OFF
     "${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME}" OFF)
+cmake_policy(POP)
+
 cmake_dependent_option(TOML11_TEST_WITH_ASAN  "build toml11 unit tests with asan" OFF
     "${TOML11_BUILD_TESTS}" OFF)
 cmake_dependent_option(TOML11_TEST_WITH_UBSAN "build toml11 unit tests with ubsan" OFF
@@ -36,8 +40,22 @@ if(${TOML11_TEST_WITH_ASAN} AND ${TOML11_TEST_WITH_UBSAN})
     message(FATAL_ERROR "trying to build tests with BOTH asan and ubsan")
 endif()
 
-include(GNUInstallDirs)
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-Wall"                 TOML11_COMPILER_SUPPORTS_WALL)
+check_cxx_compiler_flag("-Wextra"               TOML11_COMPILER_SUPPORTS_WEXTRA)
+check_cxx_compiler_flag("-Wpedantic"            TOML11_COMPILER_SUPPORTS_WPEDANTIC)
+check_cxx_compiler_flag("-Werror"               TOML11_COMPILER_SUPPORTS_WERROR)
+check_cxx_compiler_flag("-Wsign-conversion"     TOML11_COMPILER_SUPPORTS_WSIGN_CONVERSION)
+check_cxx_compiler_flag("-Wconversion"          TOML11_COMPILER_SUPPORTS_WCONVERSION)
+check_cxx_compiler_flag("-Wduplicated-cond"     TOML11_COMPILER_SUPPORTS_WDUPLICATED_COND)
+check_cxx_compiler_flag("-Wduplicated-branches" TOML11_COMPILER_SUPPORTS_WDUPLICATED_BRANCHES)
+check_cxx_compiler_flag("-Wlogical-op"          TOML11_COMPILER_SUPPORTS_WLOGICAL_OP)
+check_cxx_compiler_flag("-Wdouble-promotion"    TOML11_COMPILER_SUPPORTS_WDOUBLE_PROMOTION)
+check_cxx_compiler_flag("-Wrange-loop-analysis" TOML11_COMPILER_SUPPORTS_WRANGE_LOOP_ANALYSIS)
+check_cxx_compiler_flag("-Wundef"               TOML11_COMPILER_SUPPORTS_WUNDEF)
+check_cxx_compiler_flag("-Wshadow"              TOML11_COMPILER_SUPPORTS_WSHADOW)
 
+include(GNUInstallDirs)
 set(TOML11_INSTALL_CMAKE_DIR   ${CMAKE_INSTALL_LIBDIR}/cmake/toml11)
 set(TOML11_INSTALL_INCLUDE_DIR ${CMAKE_INSTALL_INCLUDEDIR})
 set(TOML11_CONFIG_DIR          ${CMAKE_CURRENT_BINARY_DIR}/cmake)

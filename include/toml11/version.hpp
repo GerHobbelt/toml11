@@ -3,7 +3,7 @@
 
 #define TOML11_VERSION_MAJOR 4
 #define TOML11_VERSION_MINOR 0
-#define TOML11_VERSION_PATCH 2
+#define TOML11_VERSION_PATCH 3
 
 #ifndef __cplusplus
 #    error "__cplusplus is not defined"
@@ -57,6 +57,11 @@
 #define TOML11_CXX20_VALUE 202002L
 #endif//TOML11_CXX20_VALUE
 
+#if defined(__cpp_char8_t)
+#  if __cpp_char8_t >= 201811L
+#    define TOML11_HAS_CHAR8_T 1
+#  endif
+#endif
 
 #if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
 #  if __has_include(<string_view>)

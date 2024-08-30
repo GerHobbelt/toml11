@@ -1775,19 +1775,20 @@ class basic_value
     {
         switch(this->type_)
         {
-            case value_t::boolean         : { boolean_        .~boolean_storage         (); return; }
-            case value_t::integer         : { integer_        .~integer_storage         (); return; }
-            case value_t::floating        : { floating_       .~floating_storage        (); return; }
-            case value_t::string          : { string_         .~string_storage          (); return; }
-            case value_t::offset_datetime : { offset_datetime_.~offset_datetime_storage (); return; }
-            case value_t::local_datetime  : { local_datetime_ .~local_datetime_storage  (); return; }
-            case value_t::local_date      : { local_date_     .~local_date_storage      (); return; }
-            case value_t::local_time      : { local_time_     .~local_time_storage      (); return; }
-            case value_t::array           : { array_          .~array_storage           (); return; }
-            case value_t::table           : { table_          .~table_storage           (); return; }
-            default                       : { return; }
+            case value_t::boolean         : { boolean_        .~boolean_storage         (); break; }
+            case value_t::integer         : { integer_        .~integer_storage         (); break; }
+            case value_t::floating        : { floating_       .~floating_storage        (); break; }
+            case value_t::string          : { string_         .~string_storage          (); break; }
+            case value_t::offset_datetime : { offset_datetime_.~offset_datetime_storage (); break; }
+            case value_t::local_datetime  : { local_datetime_ .~local_datetime_storage  (); break; }
+            case value_t::local_date      : { local_date_     .~local_date_storage      (); break; }
+            case value_t::local_time      : { local_time_     .~local_time_storage      (); break; }
+            case value_t::array           : { array_          .~array_storage           (); break; }
+            case value_t::table           : { table_          .~table_storage           (); break; }
+            default                       : { break; }
         }
         this->type_ = value_t::empty;
+        return;
     }
 
     template<typename T, typename U>
@@ -2026,12 +2027,16 @@ operator>=(const basic_value<TC>& lhs, const basic_value<TC>& rhs)
 }
 
 // error_info helper
+namespace detail
+{
 template<typename TC, typename ... Ts>
 error_info make_error_info_rec(error_info e,
         const basic_value<TC>& v, std::string msg, Ts&& ... tail)
 {
     return make_error_info_rec(std::move(e), v.location(), std::move(msg), std::forward<Ts>(tail)...);
 }
+} // detail
+
 template<typename TC, typename ... Ts>
 error_info make_error_info(
         std::string title, const basic_value<TC>& v, std::string msg, Ts&& ... tail)

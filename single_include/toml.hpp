@@ -3,7 +3,7 @@
 
 #define TOML11_VERSION_MAJOR 4
 #define TOML11_VERSION_MINOR 0
-#define TOML11_VERSION_PATCH 2
+#define TOML11_VERSION_PATCH 3
 
 #ifndef __cplusplus
 #    error "__cplusplus is not defined"
@@ -57,6 +57,11 @@
 #define TOML11_CXX20_VALUE 202002L
 #endif//TOML11_CXX20_VALUE
 
+#if defined(__cpp_char8_t)
+#  if __cpp_char8_t >= 201811L
+#    define TOML11_HAS_CHAR8_T 1
+#  endif
+#endif
 
 #if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
 #  if __has_include(<string_view>)
@@ -1943,7 +1948,7 @@ struct source_location
     static source_location current() { return source_location{}; }
 };
 
-inline std::string to_string(const source_location& loc)
+inline std::string to_string(const source_location&)
 {
     return std::string("");
 }
@@ -4073,13 +4078,13 @@ struct result
     {
         if(other.is_ok())
         {
-            auto tmp = ::new(std::addressof(this->succ_)) success_type(other.as_ok());
+            auto tmp = ::new(std::addressof(this->succ_)) success_type(other.succ_);
             assert(tmp == std::addressof(this->succ_));
             (void)tmp;
         }
         else
         {
-            auto tmp = ::new(std::addressof(this->fail_)) failure_type(other.as_err());
+            auto tmp = ::new(std::addressof(this->fail_)) failure_type(other.fail_);
             assert(tmp == std::addressof(this->fail_));
             (void)tmp;
         }
@@ -4088,13 +4093,13 @@ struct result
     {
         if(other.is_ok())
         {
-            auto tmp = ::new(std::addressof(this->succ_)) success_type(std::move(other.as_ok()));
+            auto tmp = ::new(std::addressof(this->succ_)) success_type(std::move(other.succ_));
             assert(tmp == std::addressof(this->succ_));
             (void)tmp;
         }
         else
         {
-            auto tmp = ::new(std::addressof(this->fail_)) failure_type(std::move(other.as_err()));
+            auto tmp = ::new(std::addressof(this->fail_)) failure_type(std::move(other.fail_));
             assert(tmp == std::addressof(this->fail_));
             (void)tmp;
         }
@@ -4105,13 +4110,13 @@ struct result
         this->cleanup();
         if(other.is_ok())
         {
-            auto tmp = ::new(std::addressof(this->succ_)) success_type(other.as_ok());
+            auto tmp = ::new(std::addressof(this->succ_)) success_type(other.succ_);
             assert(tmp == std::addressof(this->succ_));
             (void)tmp;
         }
         else
         {
-            auto tmp = ::new(std::addressof(this->fail_)) failure_type(other.as_err());
+            auto tmp = ::new(std::addressof(this->fail_)) failure_type(other.fail_);
             assert(tmp == std::addressof(this->fail_));
             (void)tmp;
         }
@@ -4123,13 +4128,13 @@ struct result
         this->cleanup();
         if(other.is_ok())
         {
-            auto tmp = ::new(std::addressof(this->succ_)) success_type(std::move(other.as_ok()));
+            auto tmp = ::new(std::addressof(this->succ_)) success_type(std::move(other.succ_));
             assert(tmp == std::addressof(this->succ_));
             (void)tmp;
         }
         else
         {
-            auto tmp = ::new(std::addressof(this->fail_)) failure_type(std::move(other.as_err()));
+            auto tmp = ::new(std::addressof(this->fail_)) failure_type(std::move(other.fail_));
             assert(tmp == std::addressof(this->fail_));
             (void)tmp;
         }
@@ -5447,6 +5452,10 @@ struct error_info
     std::string suffix_; // hint or something like that
 };
 
+// forward decl
+template<typename TypeConfig>
+class basic_value;
+
 namespace detail
 {
 inline error_info make_error_info_rec(error_info e)
@@ -5458,6 +5467,10 @@ inline error_info make_error_info_rec(error_info e, std::string s)
     e.suffix() = s;
     return e;
 }
+
+template<typename TC, typename ... Ts>
+error_info make_error_info_rec(error_info e,
+        const basic_value<TC>& v, std::string msg, Ts&& ... tail);
 
 template<typename ... Ts>
 error_info make_error_info_rec(error_info e,
@@ -7337,19 +7350,20 @@ class basic_value
     {
         switch(this->type_)
         {
-            case value_t::boolean         : { boolean_        .~boolean_storage         (); return; }
-            case value_t::integer         : { integer_        .~integer_storage         (); return; }
-            case value_t::floating        : { floating_       .~floating_storage        (); return; }
-            case value_t::string          : { string_         .~string_storage          (); return; }
-            case value_t::offset_datetime : { offset_datetime_.~offset_datetime_storage (); return; }
-            case value_t::local_datetime  : { local_datetime_ .~local_datetime_storage  (); return; }
-            case value_t::local_date      : { local_date_     .~local_date_storage      (); return; }
-            case value_t::local_time      : { local_time_     .~local_time_storage      (); return; }
-            case value_t::array           : { array_          .~array_storage           (); return; }
-            case value_t::table           : { table_          .~table_storage           (); return; }
-            default                       : { return; }
+            case value_t::boolean         : { boolean_        .~boolean_storage         (); break; }
+            case value_t::integer         : { integer_        .~integer_storage         (); break; }
+            case value_t::floating        : { floating_       .~floating_storage        (); break; }
+            case value_t::string          : { string_         .~string_storage          (); break; }
+            case value_t::offset_datetime : { offset_datetime_.~offset_datetime_storage (); break; }
+            case value_t::local_datetime  : { local_datetime_ .~local_datetime_storage  (); break; }
+            case value_t::local_date      : { local_date_     .~local_date_storage      (); break; }
+            case value_t::local_time      : { local_time_     .~local_time_storage      (); break; }
+            case value_t::array           : { array_          .~array_storage           (); break; }
+            case value_t::table           : { table_          .~table_storage           (); break; }
+            default                       : { break; }
         }
         this->type_ = value_t::empty;
+        return;
     }
 
     template<typename T, typename U>
@@ -7588,12 +7602,16 @@ operator>=(const basic_value<TC>& lhs, const basic_value<TC>& rhs)
 }
 
 // error_info helper
+namespace detail
+{
 template<typename TC, typename ... Ts>
 error_info make_error_info_rec(error_info e,
         const basic_value<TC>& v, std::string msg, Ts&& ... tail)
 {
     return make_error_info_rec(std::move(e), v.location(), std::move(msg), std::forward<Ts>(tail)...);
 }
+} // detail
+
 template<typename TC, typename ... Ts>
 error_info make_error_info(
         std::string title, const basic_value<TC>& v, std::string msg, Ts&& ... tail)
@@ -10979,6 +10997,7 @@ TOML11_INLINE either string(const spec& s)
 TOML11_INLINE non_ascii_key_char::non_ascii_key_char(const spec& s) noexcept
 {
     assert(s.v1_1_0_allow_non_english_in_bare_keys);
+    (void)s; // for NDEBUG
 }
 
 TOML11_INLINE std::uint32_t non_ascii_key_char::read_utf8(location& loc) const
@@ -15387,12 +15406,6 @@ inline namespace toml_literals
 {
 
 ::toml::value operator"" _toml(const char* str, std::size_t len);
-
-#if defined(__cpp_char8_t)
-#  if __cpp_char8_t >= 201811L
-#    define TOML11_HAS_CHAR8_T 1
-#  endif
-#endif
 
 #if defined(TOML11_HAS_CHAR8_T)
 // value of u8"" literal has been changed from char to char8_t and char8_t is
