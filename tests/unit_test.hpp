@@ -1,3 +1,15 @@
+#if defined(BUILD_MONOLITHIC)
+#define UNITTEST_FRAMEWORK_LIBRARY_EXIST     1
+#define BOOST_ALL_NO_LIB                     1
+#define BOOST_TEST_NO_LIB                    1
+#define BOOST_UNIT_TEST_FRAMEWORK_NO_LIB     1
+//#define BOOST_TEST_SOURCE
+//#define BOOST_TEST_INCLUDED
+
+#define BOOST_TEST_NO_MAIN                   1
+#define BOOST_TEST_MODULE  toml11
+#endif
+
 #ifndef BOOST_TEST_MODULE
 #    error "Please #define BOOST_TEST_MODULE before you #include <unit_test.hpp>"
 #endif
