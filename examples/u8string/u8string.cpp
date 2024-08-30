@@ -31,6 +31,11 @@ struct u8config
     }
 };
 
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_u8string_example_main
+#endif
+
+extern "C"
 int main()
 {
     const auto root = toml::parse<u8config>("spec_example.toml");

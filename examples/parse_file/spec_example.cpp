@@ -5,6 +5,11 @@
 
 #include <cassert>
 
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_parse_spec_example_main
+#endif
+
+extern "C"
 int main()
 {
     const auto root = toml::parse("spec_example.toml");

@@ -11,6 +11,11 @@ struct Hoge
 };
 TOML11_REFLECT(Hoge)
 
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_reflect_example_main
+#endif
+
+extern "C"
 int main()
 {
     toml::value v(toml::table{

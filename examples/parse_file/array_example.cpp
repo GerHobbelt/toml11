@@ -4,6 +4,11 @@
 
 #include <cassert>
 
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_parse_array_example_main
+#endif
+
+extern "C"
 int main()
 {
     const auto root = toml::parse("array_example.toml");

@@ -31,7 +31,12 @@ struct boost_config
     }
 };
 
-int main(int argc, char** argv)
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_boost_container_example_main
+#endif
+
+extern "C"
+int main(int argc, const char** argv)
 {
     if(argc != 2)
     {

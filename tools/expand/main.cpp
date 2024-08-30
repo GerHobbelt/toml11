@@ -114,7 +114,12 @@ struct Graph
     std::map<std::filesystem::path, Node> nodes;
 };
 
-int main(int argc, char** argv)
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_expand_tool_main
+#endif
+
+extern "C"
+int main(int argc, const char** argv)
 {
     using namespace std::literals::string_literals;
     if(argc != 2)

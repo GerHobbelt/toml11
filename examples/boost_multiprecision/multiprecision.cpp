@@ -30,6 +30,11 @@ struct large_num_config
     }
 };
 
+#if defined(BUILD_MONOLITHIC)
+#define main     toml11_boost_multiprecision_example_main
+#endif
+
+extern "C"
 int main()
 {
     const std::string input_str(R"(
