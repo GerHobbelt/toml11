@@ -149,5 +149,4 @@ BOOST_AUTO_TEST_CASE(test_string_add_assign)
         BOOST_TEST(str == "foobar");
     }
 
-
 }
