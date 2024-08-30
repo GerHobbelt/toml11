@@ -6,7 +6,7 @@
 using namespace toml;
 using namespace detail;
 
-BOOST_AUTO_TEST_CASE(test_string)
+BOOST_AUTO_TEST_CASE(test_parse_string)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
         "\"The quick brown fox jumps over the lazy dog\"",
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(test_string)
         string("The quick brown fox \njumps over the lazy dog", string_t::literal));
 }
 
-BOOST_AUTO_TEST_CASE(test_string_value)
+BOOST_AUTO_TEST_CASE(test_parse_string_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>,
         "\"The quick brown fox jumps over the lazy dog\"",
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE(test_string_value)
 }
 
 
-BOOST_AUTO_TEST_CASE(test_basic_string)
+BOOST_AUTO_TEST_CASE(test_parse_basic_string)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
         "\"GitHub Cofounder & CEO\\nLikes tater tots and beer.\"",
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_basic_string)
         string("Here are fifteen apostrophes: '''''''''''''''", string_t::basic));
 }
 
-BOOST_AUTO_TEST_CASE(test_basic_string_value)
+BOOST_AUTO_TEST_CASE(test_parse_basic_string_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>,
         "\"GitHub Cofounder & CEO\\nLikes tater tots and beer.\"",
@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE(test_basic_string_value)
         value("Here are fifteen apostrophes: '''''''''''''''", string_t::basic));
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_basic_string)
+BOOST_AUTO_TEST_CASE(test_parse_ml_basic_string)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
         "\"\"\"\nThe quick brown \\\n\n  fox jumps over \\\n  the lazy dog.\"\"\"",
@@ -119,7 +119,7 @@ BOOST_AUTO_TEST_CASE(test_ml_basic_string)
         string("\"This,\" she said, \"is just a pointless statement.\"", string_t::basic));
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_basic_string_value)
+BOOST_AUTO_TEST_CASE(test_parse_ml_basic_string_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>,
         "\"\"\"\nThe quick brown \\\n\n  fox jumps over \\\n  the lazy dog.\"\"\"",
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(test_ml_basic_string_value)
         value("\"This,\" she said, \"is just a pointless statement.\"", string_t::basic));
 }
 
-BOOST_AUTO_TEST_CASE(test_literal_string)
+BOOST_AUTO_TEST_CASE(test_parse_literal_string)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
         "'C:\\Users\\nodejs\\templates'",
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(test_literal_string)
         string("<\\i\\c*\\s*>", string_t::literal));
 }
 
-BOOST_AUTO_TEST_CASE(test_literal_string_value)
+BOOST_AUTO_TEST_CASE(test_parse_literal_string_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>,
         "'C:\\Users\\nodejs\\templates'",
@@ -174,7 +174,7 @@ BOOST_AUTO_TEST_CASE(test_literal_string_value)
         value("<\\i\\c*\\s*>", string_t::literal));
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_literal_string)
+BOOST_AUTO_TEST_CASE(test_parse_ml_literal_string)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
         "'''I [dw]on't need \\d{2} apples'''",
@@ -193,7 +193,7 @@ BOOST_AUTO_TEST_CASE(test_ml_literal_string)
         string("'This,' she said, 'is just a pointless statement.'", string_t::literal));
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_literal_string_value)
+BOOST_AUTO_TEST_CASE(test_parse_ml_literal_string_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>,
         "'''I [dw]on't need \\d{2} apples'''",
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE(test_ml_literal_string_value)
         value("'This,' she said, 'is just a pointless statement.'", string_t::literal));
 }
 
-BOOST_AUTO_TEST_CASE(test_simple_excape_sequences)
+BOOST_AUTO_TEST_CASE(test_parse_simple_excape_sequences)
 {
     TOML11_TEST_PARSE_EQUAL(parse_string,
             R"("\"\\\b\f\n\r\t")",
@@ -225,7 +225,7 @@ BOOST_AUTO_TEST_CASE(test_simple_excape_sequences)
 }
 
 
-BOOST_AUTO_TEST_CASE(test_unicode_escape_sequence)
+BOOST_AUTO_TEST_CASE(test_parse_unicode_escape_sequence)
 {
 #if defined(_MSC_VER) || defined(__INTEL_COMPILER)
     TOML11_TEST_PARSE_EQUAL(parse_string,

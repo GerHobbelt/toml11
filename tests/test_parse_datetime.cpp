@@ -6,7 +6,7 @@
 using namespace toml;
 using namespace detail;
 
-BOOST_AUTO_TEST_CASE(test_time)
+BOOST_AUTO_TEST_CASE(test_parse_time)
 {
     TOML11_TEST_PARSE_EQUAL(parse_local_time, "07:32:00",        toml::local_time(7, 32, 0));
     TOML11_TEST_PARSE_EQUAL(parse_local_time, "07:32:00.99",     toml::local_time(7, 32, 0, 990, 0));
@@ -19,7 +19,7 @@ BOOST_AUTO_TEST_CASE(test_time)
     TOML11_TEST_PARSE_EQUAL(parse_local_time, "23:59:60.999999", toml::local_time(23, 59, 60, 999, 999)); // leap second
 }
 
-BOOST_AUTO_TEST_CASE(test_time_value)
+BOOST_AUTO_TEST_CASE(test_parse_time_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>, "07:32:00",        toml::value(toml::local_time(7, 32, 0)));
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>, "07:32:00.99",     toml::value(toml::local_time(7, 32, 0, 990, 0)));
@@ -37,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_time_value)
     BOOST_CHECK_THROW(toml::parse(stream3), toml::syntax_error);
 }
 
-BOOST_AUTO_TEST_CASE(test_date)
+BOOST_AUTO_TEST_CASE(test_parse_date)
 {
     TOML11_TEST_PARSE_EQUAL(parse_local_date,  "1979-05-27", toml::local_date(1979, toml::month_t::May, 27));
 
@@ -141,12 +141,12 @@ BOOST_AUTO_TEST_CASE(test_date)
     BOOST_CHECK_THROW(toml::parse(stream0_1), toml::syntax_error);
 }
 
-BOOST_AUTO_TEST_CASE(test_date_value)
+BOOST_AUTO_TEST_CASE(test_parse_date_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>, "1979-05-27", value(toml::local_date(1979, toml::month_t::May, 27)));
 }
 
-BOOST_AUTO_TEST_CASE(test_datetime)
+BOOST_AUTO_TEST_CASE(test_parse_datetime)
 {
     TOML11_TEST_PARSE_EQUAL(parse_local_datetime, "1979-05-27T07:32:00",
         toml::local_datetime(toml::local_date(1979, toml::month_t::May, 27), toml::local_time(7, 32, 0)));
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE(test_datetime)
         toml::local_datetime(toml::local_date(1979, toml::month_t::May, 27), toml::local_time(7, 32, 0, 999, 999)));
 }
 
-BOOST_AUTO_TEST_CASE(test_datetime_value)
+BOOST_AUTO_TEST_CASE(test_parse_datetime_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>, "1979-05-27T07:32:00",
         toml::value(toml::local_datetime(toml::local_date(1979, toml::month_t::May, 27), toml::local_time(7, 32, 0))));
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE(test_datetime_value)
         toml::value(toml::local_datetime(toml::local_date(1979, toml::month_t::May, 27), toml::local_time(7, 32, 0, 999, 999))));
 }
 
-BOOST_AUTO_TEST_CASE(test_offset_datetime)
+BOOST_AUTO_TEST_CASE(test_parse_offset_datetime)
 {
     TOML11_TEST_PARSE_EQUAL(parse_offset_datetime, "1979-05-27T07:32:00Z",
         toml::offset_datetime(toml::local_date(1979, toml::month_t::May, 27),
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE(test_offset_datetime)
     BOOST_CHECK_THROW(toml::parse(stream2), toml::syntax_error);
 }
 
-BOOST_AUTO_TEST_CASE(test_offset_datetime_value)
+BOOST_AUTO_TEST_CASE(test_parse_offset_datetime_value)
 {
     TOML11_TEST_PARSE_EQUAL_VALUE(parse_value<toml::value>, "1979-05-27T07:32:00Z",
         toml::value(toml::offset_datetime(toml::local_date(1979, toml::month_t::May, 27),

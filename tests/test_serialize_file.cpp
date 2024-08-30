@@ -43,7 +43,7 @@ bool has_comment_inside(const toml::basic_value<Comment, Table, Array>& v)
     return true;
 }
 
-BOOST_AUTO_TEST_CASE(test_example)
+BOOST_AUTO_TEST_CASE(test_serialize_example)
 {
     const auto data = toml::parse(testinput("example.toml"));
     {
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE(test_example)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_example_map_dq)
+BOOST_AUTO_TEST_CASE(test_serialize_example_map_dq)
 {
     const auto data = toml::parse<toml::discard_comments, std::map, std::deque>(
             testinput("example.toml"));
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_example_map_dq)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_example_with_comment)
+BOOST_AUTO_TEST_CASE(test_serialize_example_with_comment)
 {
     const auto data = toml::parse<toml::preserve_comments>(testinput("example.toml"));
     {
@@ -112,7 +112,7 @@ BOOST_AUTO_TEST_CASE(test_example_with_comment)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_example_with_comment_nocomment)
+BOOST_AUTO_TEST_CASE(test_serialize_example_with_comment_nocomment)
 {
     {
         const auto data = toml::parse<toml::preserve_comments>(testinput("example.toml"));
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE(test_example_with_comment_nocomment)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_example_with_comment_map_dq)
+BOOST_AUTO_TEST_CASE(test_serialize_example_with_comment_map_dq)
 {
     const auto data = toml::parse<toml::preserve_comments, std::map, std::deque>(
             testinput("example.toml"));
@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE(test_example_with_comment_map_dq)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_example_with_comment_map_dq_nocomment)
+BOOST_AUTO_TEST_CASE(test_serialize_example_with_comment_map_dq_nocomment)
 {
     {
         const auto data = toml::parse<toml::preserve_comments, std::map, std::deque>(testinput("example.toml"));
@@ -195,7 +195,7 @@ BOOST_AUTO_TEST_CASE(test_example_with_comment_map_dq_nocomment)
     }
 }
 
-BOOST_AUTO_TEST_CASE(test_fruit)
+BOOST_AUTO_TEST_CASE(test_serialize_fruit)
 {
     const auto data = toml::parse(testinput("fruit.toml"));
     {
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE(test_fruit)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_fruit_map_dq)
+BOOST_AUTO_TEST_CASE(test_serialize_fruit_map_dq)
 {
     const auto data = toml::parse<toml::discard_comments, std::map, std::deque>(
             testinput("fruit.toml"));
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(test_fruit_map_dq)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_fruit_with_comments)
+BOOST_AUTO_TEST_CASE(test_serialize_fruit_with_comments)
 {
     const auto data = toml::parse<toml::preserve_comments>(testinput("fruit.toml"));
     {
@@ -230,7 +230,7 @@ BOOST_AUTO_TEST_CASE(test_fruit_with_comments)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_fruit_with_comments_map_dq)
+BOOST_AUTO_TEST_CASE(test_serialize_fruit_with_comments_map_dq)
 {
     const auto data = toml::parse<toml::preserve_comments, std::map, std::deque>(
             testinput("fruit.toml"));
@@ -242,7 +242,7 @@ BOOST_AUTO_TEST_CASE(test_fruit_with_comments_map_dq)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_hard_example)
+BOOST_AUTO_TEST_CASE(test_serialize_hard_example)
 {
     const auto data = toml::parse(testinput("hard_example.toml"));
     {
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE(test_hard_example)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_hard_example_map_dq)
+BOOST_AUTO_TEST_CASE(test_serialize_hard_example_map_dq)
 {
     const auto data = toml::parse<toml::discard_comments, std::map, std::deque>(
             testinput("hard_example.toml"));
@@ -266,7 +266,7 @@ BOOST_AUTO_TEST_CASE(test_hard_example_map_dq)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_hard_example_with_comment)
+BOOST_AUTO_TEST_CASE(test_serialize_hard_example_with_comment)
 {
     const auto data = toml::parse<toml::preserve_comments, std::map, std::deque>(
             testinput("hard_example.toml"));
@@ -283,7 +283,7 @@ BOOST_AUTO_TEST_CASE(test_hard_example_with_comment)
     BOOST_TEST(data == serialized);
 }
 
-BOOST_AUTO_TEST_CASE(test_format_key)
+BOOST_AUTO_TEST_CASE(test_serialize_format_key)
 {
     {
         const toml::key key("normal_bare-key");
@@ -340,7 +340,7 @@ BOOST_AUTO_TEST_CASE(test_format_key)
 // of the line width limit.
 //     It may fail if the element of a table has comment. In that case,
 // the array-of-tables will be formatted as a multiline table.
-BOOST_AUTO_TEST_CASE(test_distinguish_comment)
+BOOST_AUTO_TEST_CASE(test_serialize_distinguish_comment)
 {
     const std::string str = R"(# comment about array itself
 array_of_table = [

@@ -6,7 +6,7 @@
 using namespace toml;
 using namespace detail;
 
-BOOST_AUTO_TEST_CASE(test_string)
+BOOST_AUTO_TEST_CASE(test_lex_string)
 {
     TOML11_TEST_LEX_ACCEPT(lex_string,
             "\"The quick brown fox jumps over the lazy dog\"",
@@ -22,7 +22,7 @@ BOOST_AUTO_TEST_CASE(test_string)
             "'''The quick brown fox \njumps over the lazy dog'''");
 }
 
-BOOST_AUTO_TEST_CASE(test_basic_string)
+BOOST_AUTO_TEST_CASE(test_lex_basic_string)
 {
     TOML11_TEST_LEX_ACCEPT(lex_string,
             "\"GitHub Cofounder & CEO\\nLikes tater tots and beer.\"",
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_basic_string)
             "\" And when \\\"'s are in the string, along with # \\\"\"");
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_basic_string)
+BOOST_AUTO_TEST_CASE(test_lex_ml_basic_string)
 {
     TOML11_TEST_LEX_ACCEPT(lex_string,
         "\"\"\"\nThe quick brown \\\n\n  fox jumps over \\\n  the lazy dog.\"\"\"",
@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_ml_basic_string)
         "\"\"\"\"This,\" she said, \"is just a pointless statement.\"\"\"\"");
 }
 
-BOOST_AUTO_TEST_CASE(test_literal_string)
+BOOST_AUTO_TEST_CASE(test_lex_literal_string)
 {
     TOML11_TEST_LEX_ACCEPT(lex_string,
         "'C:\\Users\\nodejs\\templates'",
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE(test_literal_string)
         "'<\\i\\c*\\s*>'");
 }
 
-BOOST_AUTO_TEST_CASE(test_ml_literal_string)
+BOOST_AUTO_TEST_CASE(test_lex_ml_literal_string)
 {
     TOML11_TEST_LEX_ACCEPT(lex_string,
         "'''I [dw]on't need \\d{2} apples'''",

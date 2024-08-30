@@ -6,7 +6,7 @@
 using namespace toml;
 using namespace detail;
 
-BOOST_AUTO_TEST_CASE(test_bare_key)
+BOOST_AUTO_TEST_CASE(test_lex_bare_key)
 {
     TOML11_TEST_LEX_ACCEPT(lex_key, "barekey",  "barekey");
     TOML11_TEST_LEX_ACCEPT(lex_key, "bare-key", "bare-key");
@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(test_bare_key)
     TOML11_TEST_LEX_ACCEPT(lex_key, "1234",     "1234");
 }
 
-BOOST_AUTO_TEST_CASE(test_quoted_key)
+BOOST_AUTO_TEST_CASE(test_lex_quoted_key)
 {
     TOML11_TEST_LEX_ACCEPT(lex_key, "\"127.0.0.1\"", "\"127.0.0.1\"");
     TOML11_TEST_LEX_ACCEPT(lex_key, "\"character encoding\"", "\"character encoding\"");
@@ -27,7 +27,7 @@ BOOST_AUTO_TEST_CASE(test_quoted_key)
     TOML11_TEST_LEX_ACCEPT(lex_key, "'quoted \"value\"'", "'quoted \"value\"'");
 }
 
-BOOST_AUTO_TEST_CASE(test_dotted_key)
+BOOST_AUTO_TEST_CASE(test_lex_dotted_key)
 {
     TOML11_TEST_LEX_ACCEPT(lex_key, "physical.color", "physical.color");
     TOML11_TEST_LEX_ACCEPT(lex_key, "physical.shape", "physical.shape");
@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_dotted_key)
     TOML11_TEST_LEX_ACCEPT(lex_key, "site.\"google.com\"", "site.\"google.com\"");
 }
 
-BOOST_AUTO_TEST_CASE(test_comment)
+BOOST_AUTO_TEST_CASE(test_lex_comment)
 {
     TOML11_TEST_LEX_ACCEPT(lex_comment, "#   hoge", "#   hoge");
     TOML11_TEST_LEX_ACCEPT(lex_comment, "#   \n",   "#   ");
