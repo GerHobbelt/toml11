@@ -99,6 +99,72 @@ inline std::string make_string(std::size_t len, char c)
     return std::string(len, c);
 }
 
+// ---------------------------------------------------------------------------
+
+template<typename Char,  typename Traits, typename Alloc,
+         typename Char2, typename Traits2, typename Alloc2>
+struct string_conv_impl
+{
+    static_assert(sizeof(Char)  == sizeof(char), "");
+    static_assert(sizeof(Char2) == sizeof(char), "");
+
+    static std::basic_string<Char, Traits, Alloc> invoke(std::basic_string<Char2, Traits2, Alloc2> s)
+    {
+        std::basic_string<Char, Traits, Alloc> retval;
+        std::transform(s.begin(), s.end(), std::back_inserter(retval),
+            [](const Char2 c) {return static_cast<Char>(c);});
+        return retval;
+    }
+    template<std::size_t N>
+    static std::basic_string<Char, Traits, Alloc> invoke(const Char2 (&s)[N])
+    {
+        std::basic_string<Char, Traits, Alloc> retval;
+        // "string literal" has null-char at the end. to skip it, we use prev.
+        std::transform(std::begin(s), std::prev(std::end(s)), std::back_inserter(retval),
+            [](const Char2 c) {return static_cast<Char>(c);});
+        return retval;
+    }
+};
+
+template<typename Char,  typename Traits, typename Alloc>
+struct string_conv_impl<Char, Traits, Alloc, Char, Traits, Alloc>
+{
+    static_assert(sizeof(Char) == sizeof(char), "");
+
+    static std::basic_string<Char, Traits, Alloc> invoke(std::basic_string<Char, Traits, Alloc> s)
+    {
+        return s;
+    }
+    template<std::size_t N>
+    static std::basic_string<Char, Traits, Alloc> invoke(const Char (&s)[N])
+    {
+        return std::basic_string<Char, Traits, Alloc>(s);
+    }
+};
+
+template<typename S, typename Char2, typename Traits2, typename Alloc2>
+cxx::enable_if_t<is_std_basic_string<S>::value, S>
+string_conv(std::basic_string<Char2, Traits2, Alloc2> s)
+{
+    using C = typename S::value_type;
+    using T = typename S::traits_type;
+    using A = typename S::allocator_type;
+    return string_conv_impl<C, T, A, Char2, Traits2, Alloc2>::invoke(std::move(s));
+}
+template<typename S, std::size_t N>
+cxx::enable_if_t<is_std_basic_string<S>::value, S>
+string_conv(const char (&s)[N])
+{
+    using C = typename S::value_type;
+    using T = typename S::traits_type;
+    using A = typename S::allocator_type;
+    using C2 = char;
+    using T2 = std::char_traits<C2>;
+    using A2 = std::allocator<C2>;
+
+    return string_conv_impl<C, T, A, C2, T2, A2>::template invoke<N>(s);
+}
+
 } // namespace detail
 } // namespace toml
 #endif // TOML11_UTILITY_HPP
