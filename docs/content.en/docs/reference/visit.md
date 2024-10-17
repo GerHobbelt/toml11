@@ -56,7 +56,7 @@ struct type_name_of
     std::string operator()(const toml::value::table_type          &) const {return "table";}
 };
 
-int main()
+int main(void)
 {
     toml::value v(3.14);
     std::cout << toml::visit(type_name_of{}, v) << std::endl; // floating

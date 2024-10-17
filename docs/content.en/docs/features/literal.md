@@ -11,7 +11,7 @@ With the `""_toml` literal, you can format TOML files inline.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -28,7 +28,7 @@ When including line breaks, raw string literals come in handy.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -49,7 +49,7 @@ If a value is written on its own, that value is returned.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -74,7 +74,7 @@ To interpret as an array, please use a trailing comma.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 

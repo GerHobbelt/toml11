@@ -104,7 +104,7 @@ parse_float(const std::string& str, const source_location src, const bool is_hex
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::ordered_value input = toml::parse<toml::ordered_type_config>("example.toml");
     std::cout << toml::format(input) << std::endl;

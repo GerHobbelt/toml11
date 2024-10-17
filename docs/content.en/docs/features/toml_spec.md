@@ -15,7 +15,7 @@ You can construct a [`toml::spec`](docs/reference/spec#tomlspec) from [`toml::se
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec(toml::semantic_version(1, 1, 0));
     return 0;
@@ -27,7 +27,7 @@ However, to make this shorter, the `toml::spec::v()` function is provided.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec = toml::spec::v(1, 1, 0);
     return 0;
@@ -59,7 +59,7 @@ This allows you to change the TOML version being used.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::value input = toml::parse("input.toml", toml::spec::v(1, 1, 0));
     return 0;
@@ -75,7 +75,7 @@ This allows you to change the TOML version being used.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::value v = toml::parse("input.toml", toml::spec::v(1, 1, 0));
     std::cout << toml::format(v, toml::spec::v(1, 1, 0)) << std::endl;
@@ -92,7 +92,7 @@ With version upgrades in TOML, multiple new features are introduced, and it's po
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec = toml::spec::v(1, 0, 0);
 

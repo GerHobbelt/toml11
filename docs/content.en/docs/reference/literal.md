@@ -71,7 +71,7 @@ Defined when `char8_t` is available. Otherwise identical in functionality, diffe
 
 ```cpp
 #include <toml.hpp>
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
     const auto v = "a = \"foo\""_toml;

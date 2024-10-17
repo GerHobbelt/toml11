@@ -34,7 +34,7 @@ When parsed, it will be treated as `toml::value_t::empty`, similar to a default-
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_null_value = true;
@@ -63,7 +63,7 @@ The format follows the `printf` specification for `%a/%A`.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_hex_float = true;
@@ -108,7 +108,7 @@ The suffix is stored as `std::string suffix` in the format information.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_hex_float = true;

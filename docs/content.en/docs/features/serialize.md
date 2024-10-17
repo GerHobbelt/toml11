@@ -12,7 +12,7 @@ Using `toml::format`, you can convert a `toml::value` to a string.
 #include <toml.hpp>
 #include <cassert>
 
-int main()
+int main(void)
 {
     const toml::value v(toml::table{
         {"a", 42},
@@ -53,7 +53,7 @@ For nested keys, you can pass a `std::vector<std::string>`.
 #include <toml.hpp>
 #include <cassert>
 
-int main()
+int main(void)
 {
     const toml::value v(toml::table{
         {"a", 42},
@@ -185,7 +185,7 @@ Ensure that you pass the same `toml::spec` to `toml::format` to maintain compati
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const auto spec = toml::spec::v(1, 1, 0);
 

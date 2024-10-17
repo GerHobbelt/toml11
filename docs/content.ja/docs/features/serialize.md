@@ -12,7 +12,7 @@ weight = 40
 #include <toml.hpp>
 #include <cassert>
 
-int main()
+int main(void)
 {
     const toml::value v(toml::table{
         {"a", 42},
@@ -57,7 +57,7 @@ int main()
 #include <toml.hpp>
 #include <cassert>
 
-int main()
+int main(void)
 {
     const toml::value v(toml::table{
         {"a", 42},
@@ -104,7 +104,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::value v(0x00C0'FFEE);
     v.as_integer_fmt().fmt    = toml::integer_format::hex;
@@ -221,7 +221,7 @@ TOMLバージョンによって使用できない言語機能があります。
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const auto spec = toml::spec::v(1, 1, 0)
 

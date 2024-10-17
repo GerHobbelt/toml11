@@ -32,7 +32,7 @@ toml11 is a feature-rich TOML language library for C++11/14/17/20.
 // nums  = [3, 1, 4, 1, 5] # pi!
 // ```
 
-int main()
+int main(void)
 {
     // select TOML version at runtime (optional)
     auto data = toml::parse("example.toml", toml::spec::v(1,1,0));

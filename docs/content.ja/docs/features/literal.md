@@ -11,7 +11,7 @@ weight = 60
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -28,7 +28,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -49,7 +49,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 
@@ -75,7 +75,7 @@ TOMLは数値のみからなるキーを許可しています。
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
 

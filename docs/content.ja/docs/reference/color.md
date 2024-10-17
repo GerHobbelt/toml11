@@ -51,7 +51,7 @@ ANSIエスケープシーケンスによる色付けを行うよう設定しま�
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::color::enable(); // この後の全てのエラーがカラーになります。
     const auto input = toml::parse("input.toml");
@@ -76,7 +76,7 @@ ANSIエスケープシーケンスによる色付けを行わないよう設定�
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::color::enable(); // この後の全てのエラーがカラーになります。
     const auto input = toml::parse("input.toml");
@@ -103,7 +103,7 @@ bool should_color();
 #include <iomanip>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::cout << "colorized? : " << std::boolalpha << toml::color::should_color() << std::endl;
     return 0;
@@ -138,7 +138,7 @@ ANSIエスケープシーケンスによって、`fg`を色付けします。
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::cout << toml::color::red << "red!" << std::endl;
     return 0;

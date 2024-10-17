@@ -72,7 +72,7 @@ const auto v4 = "[1,]"_toml; // v4: [1,]
 
 ```cpp
 #include <toml.hpp>
-int main()
+int main(void)
 {
     using namespace toml::literals::toml_literals;
     const auto v = "a = \"foo\""_toml;

@@ -44,7 +44,7 @@ b = [ 1, 2, 3, null, 5]
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_null_value = true;
@@ -73,7 +73,7 @@ a = 0x1.91eb851eb851fp+1 # 3.14
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_hex_float = true;
@@ -120,7 +120,7 @@ distance = 10_0_m # valid
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec;
     spec.ext_hex_float = true;

@@ -36,7 +36,7 @@ toml11では、`toml::parse` や `toml::try_parse` を使って、ファイル�
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const toml::value input = toml::parse("input.toml");
     std::cout << input.at("title").as_string() << std::endl;
@@ -70,7 +70,7 @@ int main()
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::string filename("input.toml");
     std::ifstream ifs(filename);
@@ -123,7 +123,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     // parse
     try {
@@ -151,7 +151,7 @@ Rustの `Result` やHaskellの `Either` に相当します。
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     const auto parse_result = toml::try_parse("input.toml");
     if(parse_result.is_ok())
@@ -198,7 +198,7 @@ int main()
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const toml::value input = toml::parse_str("title = \"parse_str\"");
     std::cout << input.at("title").as_string() << std::endl;
@@ -218,7 +218,7 @@ int main()
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const auto parse_result = toml::try_parse_str("title = \"parse_str\"");
     if(parse_result.is_ok())
@@ -249,7 +249,7 @@ UTF-8でエンコードされている必要があるため、`unsigned char`を
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::vector<unsigned char> bytes{/* ... */};
     const toml::value input = toml::parse(bytes, "internal bytes");
@@ -268,7 +268,7 @@ int main()
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::vector<unsigned char> bytes{/* ... */};
     const auto parse_result = toml::try_parse(bytes, "internal bytes");

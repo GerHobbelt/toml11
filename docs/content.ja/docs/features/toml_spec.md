@@ -19,7 +19,7 @@ weight = 70
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec(toml::semantic_version(1, 1, 0));
     return 0;
@@ -31,7 +31,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec = toml::spec::v(1, 1, 0);
     return 0;
@@ -64,7 +64,7 @@ TOML v1.1.0の一部の機能にはかなり長い議論が続いており、ま
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::value input = toml::parse("input.toml", toml::spec::v(1, 1, 0));
     return 0;
@@ -81,7 +81,7 @@ int main()
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::value v = toml::parse("input.toml", toml::spec::v(1, 1, 0));
     std::cout << toml::format(v, toml::spec::v(1, 1, 0)) << std::endl;
@@ -99,7 +99,7 @@ TOMLのバージョンアップで追加された機能は複数あり、その�
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::spec spec = toml::spec::v(1, 0, 0);
 

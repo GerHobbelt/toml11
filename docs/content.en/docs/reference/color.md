@@ -48,7 +48,7 @@ Enables colorization using ANSI escape code.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::color::enable(); // All subsequent errors will be colored.
     const auto input = toml::parse("input.toml");
@@ -73,7 +73,7 @@ Disables colorization using ANSI escape code.
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     toml::color::disable(); // All subsequent errors will not be colored.
     const auto input = toml::parse("input.toml");
@@ -100,7 +100,7 @@ Returns `true` if colorization is enabled, `false` otherwise.
 #include <iomanip>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::cout << "colorized? : " << std::boolalpha << toml::color::should_color() << std::endl;
     return 0;
@@ -135,7 +135,7 @@ Colorizes the foreground with ANSI escape code.
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::cout << toml::color::red << "red!" << toml::color::reset << std::endl;
     return 0;

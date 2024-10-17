@@ -34,7 +34,7 @@ The following sample code parses a file named `input.toml`, extracts the `title`
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const toml::value input = toml::parse("input.toml");
     std::cout << input.at("title").as_string() << std::endl;
@@ -62,7 +62,7 @@ You can use streams other than `std::ifstream`, such as `std::istringstream`. No
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::string filename("input.toml");
     std::ifstream ifs(filename);
@@ -97,7 +97,7 @@ Additionally, [`toml::syntax_error`]({{< ref "docs/reference/parser#syntax_error
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     try {
         const toml::value input = toml::parse("input.toml");
@@ -123,7 +123,7 @@ The [`result`]({{<ref "docs/reference/result#result">}}) type holds either a suc
 ```cpp
 #include <toml.hpp>
 
-int main()
+int main(void)
 {
     const auto parse_result = toml::try_parse("input.toml");
     if(parse_result.is_ok())
@@ -160,7 +160,7 @@ For the part of the error message that corresponds to the TOML file's name, if t
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const toml::value input = toml::parse_str("title = \"parse_str\"");
     std::cout << input.at("title").as_string() << std::endl;
@@ -176,7 +176,7 @@ int main()
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     const auto parse_result = toml::try_parse_str("title = \"parse_str\"");
     if(parse_result.is_ok())
@@ -207,7 +207,7 @@ When parsing byte arrays, a `filename` is required.
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::vector<unsigned char> bytes{/* ... */};
     const toml::value input = toml::parse(bytes, "internal bytes");
@@ -226,7 +226,7 @@ When parsing byte arrays, a `filename` is required.
 #include <toml.hpp>
 #include <iostream>
 
-int main()
+int main(void)
 {
     std::vector<unsigned char> bytes{/* ... */};
     const auto parse_result = toml::try_parse(bytes, "internal bytes");
