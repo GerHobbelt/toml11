@@ -6,12 +6,15 @@
 #include "from.hpp"
 #include "types.hpp"
 #include "value.hpp"
+#include "version.hpp"
 
 #if defined(TOML11_HAS_STRING_VIEW)
 #include <string_view>
 #endif // string_view
 
 namespace toml
+{
+inline namespace TOML11_INLINE_VERSION_NAMESPACE
 {
 
 // ============================================================================
@@ -408,7 +411,7 @@ get(const basic_value<TC>& v)
     using value_type = typename T::value_type;
     const auto& a = v.as_array();
 
-    std::unordered_set<T> container;
+    T container;
     for (const auto& elem : a)
     {
         container.insert(get<value_type>(elem));
@@ -647,5 +650,6 @@ get_or(const basic_value<TC>& v, T&& opt)
     }
 }
 
+} // TOML11_INLINE_VERSION_NAMESPACE
 } // toml
 #endif // TOML11_GET_HPP
