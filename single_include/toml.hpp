@@ -2,7 +2,7 @@
 #define TOML11_VERSION_HPP
 
 #define TOML11_VERSION_MAJOR 4
-#define TOML11_VERSION_MINOR 2
+#define TOML11_VERSION_MINOR 3
 #define TOML11_VERSION_PATCH 0
 
 #ifndef __cplusplus
@@ -1844,6 +1844,35 @@ using return_type_of_t = typename std::result_of<F(Args...)>::type;
 } // cxx
 } // toml
 
+// ---------------------------------------------------------------------------
+// C++17 void_t
+
+#if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
+#  if defined(__cpp_lib_void_t)
+#    if __cpp_lib_void_t >= 201411L
+#      define TOML11_HAS_STD_VOID_T 1
+#    endif
+#  endif
+#endif
+
+namespace toml
+{
+namespace cxx
+{
+#if defined(TOML11_HAS_STD_VOID_T)
+
+using std::void_t;
+
+#else
+
+template<typename ...>
+using void_t = void;
+
+#endif // TOML11_HAS_STD_VOID_T
+
+} // cxx
+} // toml
+
 // ----------------------------------------------------------------------------
 // (subset of) source_location
 
@@ -1892,9 +1921,19 @@ using source_location = std::source_location;
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #elif defined(TOML11_HAS_EXPERIMENTAL_SOURCE_LOCATION)
@@ -1907,9 +1946,19 @@ using source_location = std::experimental::source_location;
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #elif defined(TOML11_HAS_BUILTIN_FILE_LINE)
@@ -1941,9 +1990,19 @@ struct source_location
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #else // no builtin
@@ -3402,6 +3461,32 @@ class ordered_map : detail::ordered_map_ebo_container<Cmp>
         return iter->second;
     }
 
+    iterator erase(iterator pos)
+    {
+        return container_.erase(pos);
+    }
+    
+    iterator erase(const_iterator pos)
+    {
+        return container_.erase(pos);
+    }
+    
+    iterator erase(const_iterator first, const_iterator last)
+    {
+        return container_.erase(first, last);
+    }
+    
+    size_type erase(const key_type& key)
+    {
+        auto it = this->find(key);
+        if (it != this->end())
+        {
+            container_.erase(it);
+            return 1;
+        }
+        return 0;
+    }
+
     mapped_type& operator[](const key_type& k)
     {
         const auto iter = this->find(k);
@@ -3524,6 +3609,10 @@ struct from;
 
 #if defined(TOML11_HAS_STRING_VIEW)
 #include <string_view>
+#endif
+
+#if defined(TOML11_HAS_OPTIONAL)
+#include <optional>
 #endif
 
 namespace toml
@@ -3670,6 +3759,16 @@ struct is_std_tuple_impl<std::tuple<Ts...>> : std::true_type{};
 template<typename T>
 using is_std_tuple = is_std_tuple_impl<cxx::remove_cvref_t<T>>;
 
+#if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
+#  if __has_include(<optional>)
+template<typename T> struct is_std_optional_impl : std::false_type{};
+template<typename T>
+struct is_std_optional_impl<std::optional<T>> : std::true_type{};
+template<typename T>
+using is_std_optional = is_std_optional_impl<cxx::remove_cvref_t<T>>;
+#  endif // <optional>
+#endif // > C++17
+
 template<typename T> struct is_std_array_impl : std::false_type{};
 template<typename T, std::size_t N>
 struct is_std_array_impl<std::array<T, N>> : std::true_type{};
@@ -3796,7 +3895,7 @@ struct bad_result_access final : public ::toml::exception
 template<typename T>
 struct success
 {
-    static_assert( ! std::is_same<T, void>::value, "");
+    static_assert( ! std::is_void<T>::value, "");
 
     using value_type = T;
 
@@ -3830,7 +3929,7 @@ struct success
 template<typename T>
 struct success<std::reference_wrapper<T>>
 {
-    static_assert( ! std::is_same<T, void>::value, "");
+    static_assert( ! std::is_void<T>::value, "");
 
     using value_type = T;
 
@@ -4451,7 +4550,7 @@ class location
 
     location(source_ptr src, std::string src_name)
         : source_(std::move(src)), source_name_(std::move(src_name)),
-          location_(0), line_number_(1)
+          location_(0), line_number_(1), column_number_(1)
     {}
 
     location(const location&) = default;
@@ -4461,7 +4560,7 @@ class location
     ~location() = default;
 
     void advance(std::size_t n = 1) noexcept;
-    void retrace(std::size_t n = 1) noexcept;
+    void retrace() noexcept;
 
     bool is_ok() const noexcept { return static_cast<bool>(this->source_); }
 
@@ -4474,22 +4573,25 @@ class location
     {
         return this->location_;
     }
-    void set_location(const std::size_t loc) noexcept;
 
     std::size_t line_number() const noexcept
     {
         return this->line_number_;
     }
+    std::size_t column_number() const noexcept
+    {
+        return this->column_number_;
+    }
     std::string get_line() const;
-    std::size_t column_number() const noexcept;
 
     source_ptr const&  source()      const noexcept {return this->source_;}
     std::string const& source_name() const noexcept {return this->source_name_;}
 
   private:
 
-    void advance_line_number(const std::size_t n);
-    void retrace_line_number(const std::size_t n);
+    void advance_impl(const std::size_t n);
+    void retrace_impl();
+    std::size_t calc_column_number() const noexcept;
 
   private:
 
@@ -4501,6 +4603,7 @@ class location
     std::string source_name_;
     std::size_t location_; // std::vector<>::difference_type is signed
     std::size_t line_number_;
+    std::size_t column_number_;
 };
 
 bool operator==(const location& lhs, const location& rhs) noexcept;
@@ -4579,27 +4682,27 @@ TOML11_INLINE void location::advance(std::size_t n) noexcept
     assert(this->is_ok());
     if(this->location_ + n < this->source_->size())
     {
-        this->advance_line_number(n);
-        this->location_ += n;
+        this->advance_impl(n);
     }
     else
     {
-        this->advance_line_number(this->source_->size() - this->location_);
-        this->location_ = this->source_->size();
+        this->advance_impl(this->source_->size() - this->location_);
+
+        assert(this->location_ == this->source_->size());
     }
 }
-TOML11_INLINE void location::retrace(std::size_t n) noexcept
+TOML11_INLINE void location::retrace(/*restricted to n=1*/) noexcept
 {
     assert(this->is_ok());
-    if(this->location_ < n)
+    if(this->location_ == 0)
     {
         this->location_ = 0;
         this->line_number_ = 1;
+        this->column_number_ = 1;
     }
     else
     {
-        this->retrace_line_number(n);
-        this->location_ -= n;
+        this->retrace_impl();
     }
 }
 
@@ -4630,30 +4733,6 @@ TOML11_INLINE location::char_type location::peek()
     }
 }
 
-TOML11_INLINE void location::set_location(const std::size_t loc) noexcept
-{
-    if(this->location_ == loc)
-    {
-        return ;
-    }
-
-    if(loc == 0)
-    {
-        this->line_number_ = 1;
-    }
-    else if(this->location_ < loc)
-    {
-        const auto d = loc - this->location_;
-        this->advance_line_number(d);
-    }
-    else
-    {
-        const auto d = this->location_ - loc;
-        this->retrace_line_number(d);
-    }
-    this->location_ = loc;
-}
-
 TOML11_INLINE std::string location::get_line() const
 {
     assert(this->is_ok());
@@ -4665,7 +4744,8 @@ TOML11_INLINE std::string location::get_line() const
 
     return make_string(std::next(prev.base()), next);
 }
-TOML11_INLINE std::size_t location::column_number() const noexcept
+
+TOML11_INLINE std::size_t location::calc_column_number() const noexcept
 {
     assert(this->is_ok());
     const auto iter  = std::next(this->source_->cbegin(), static_cast<difference_type>(this->location_));
@@ -4676,38 +4756,44 @@ TOML11_INLINE std::size_t location::column_number() const noexcept
     return static_cast<std::size_t>(std::distance(prev.base(), iter) + 1); // 1-origin
 }
 
-
-TOML11_INLINE void location::advance_line_number(const std::size_t n)
+TOML11_INLINE void location::advance_impl(const std::size_t n)
 {
     assert(this->is_ok());
     assert(this->location_ + n <= this->source_->size());
 
-    const auto iter = this->source_->cbegin();
-    this->line_number_ += static_cast<std::size_t>(std::count(
-        std::next(iter, static_cast<difference_type>(this->location_)),
-        std::next(iter, static_cast<difference_type>(this->location_ + n)),
-        char_type('\n')));
+    auto iter = this->source_->cbegin();
+    std::advance(iter, static_cast<difference_type>(this->location_));
 
+    for(std::size_t i=0; i<n; ++i)
+    {
+        const auto c = *iter;
+        if(c == char_type('\n'))
+        {
+            this->line_number_  += 1;
+            this->column_number_ = 1;
+        }
+        else
+        {
+            this->column_number_ += 1;
+        }
+        iter++;
+    }
+    this->location_ += n;
     return;
 }
-TOML11_INLINE void location::retrace_line_number(const std::size_t n)
+TOML11_INLINE void location::retrace_impl(/*n == 1*/)
 {
     assert(this->is_ok());
-    assert(n <= this->location_); // loc - n >= 0
+    assert(this->location_ != 0);
 
-    const auto iter = this->source_->cbegin();
-    const auto dline_num = static_cast<std::size_t>(std::count(
-        std::next(iter, static_cast<difference_type>(this->location_ - n)),
-        std::next(iter, static_cast<difference_type>(this->location_)),
-        char_type('\n')));
+    this->location_ -= 1;
 
-    if(this->line_number_ <= dline_num)
+    auto iter = this->source_->cbegin();
+    std::advance(iter, static_cast<difference_type>(this->location_));
+    if(*iter == '\n')
     {
-        this->line_number_ = 1;
-    }
-    else
-    {
-        this->line_number_ -= dline_num;
+        this->line_number_ -= 1;
+        this->column_number_ = this->calc_column_number();
     }
     return;
 }
@@ -4730,7 +4816,7 @@ TOML11_INLINE bool operator!=(const location& lhs, const location& rhs)
 TOML11_INLINE location prev(const location& loc)
 {
     location p(loc);
-    p.retrace(1);
+    p.retrace();
     return p;
 }
 TOML11_INLINE location next(const location& loc)
@@ -4877,10 +4963,15 @@ class region
     const_iterator cend() const noexcept;
 
     std::string as_string() const;
-    std::vector<std::string> as_lines() const;
+    std::vector<std::pair<std::string, std::size_t>> as_lines() const;
 
     source_ptr const&  source()      const noexcept {return this->source_;}
     std::string const& source_name() const noexcept {return this->source_name_;}
+
+  private:
+
+    std::pair<std::string, std::size_t>
+    take_line(const_iterator begin, const_iterator end) const;
 
   private:
 
@@ -5021,27 +5112,65 @@ TOML11_INLINE std::string region::as_string() const
     }
 }
 
-TOML11_INLINE std::vector<std::string> region::as_lines() const
+TOML11_INLINE std::pair<std::string, std::size_t>
+region::take_line(const_iterator begin, const_iterator end) const
+{
+    // To omit long line, we cap region by before/after 30 chars
+    const auto dist_before = std::distance(source_->cbegin(), begin);
+    const auto dist_after  = std::distance(end, source_->cend());
+
+    const const_iterator capped_begin = (dist_before <= 30) ? source_->cbegin() : std::prev(begin, 30);
+    const const_iterator capped_end   = (dist_after  <= 30) ? source_->cend()   : std::next(end,   30);
+
+    const auto lf = char_type('\n');
+    const auto lf_before = std::find(cxx::make_reverse_iterator(begin),
+                                     cxx::make_reverse_iterator(capped_begin), lf);
+    const auto lf_after  = std::find(end, capped_end, lf);
+
+    auto offset = static_cast<std::size_t>(std::distance(lf_before.base(), begin));
+
+    std::string retval = make_string(lf_before.base(), lf_after);
+
+    if(lf_before.base() != source_->cbegin() && *lf_before != lf)
+    {
+        retval = "... " + retval;
+        offset += 4;
+    }
+
+    if(lf_after != source_->cend() && *lf_after != lf)
+    {
+        retval = retval + " ...";
+    }
+
+    return std::make_pair(retval, offset);
+}
+
+TOML11_INLINE std::vector<std::pair<std::string, std::size_t>> region::as_lines() const
 {
     assert(this->is_ok());
     if(this->length_ == 0)
     {
-        return std::vector<std::string>{""};
+        return std::vector<std::pair<std::string, std::size_t>>{
+            std::make_pair("", std::size_t(0))
+        };
     }
 
     // Consider the following toml file
     // ```
     // array = [
+    //   1, 2, 3,
     // ] # comment
     // ```
     // and the region represnets
     // ```
     //         [
+    //   1, 2, 3,
     // ]
     // ```
     // but we want to show the following.
     // ```
     // array = [
+    //   1, 2, 3,
     // ] # comment
     // ```
     // So we need to find LFs before `begin` and after `end`.
@@ -5062,25 +5191,45 @@ TOML11_INLINE std::vector<std::string> region::as_lines() const
     const auto begin = std::next(this->source_->cbegin(), begin_idx);
     const auto end   = std::next(this->source_->cbegin(), end_idx);
 
-    const auto line_begin = std::find(cxx::make_reverse_iterator(begin), this->source_->crend(), char_type('\n')).base();
-    const auto line_end   = std::find(end, this->source_->cend(), char_type('\n'));
+    assert(this->first_line_number() <= this->last_line_number());
 
-    const auto reg_lines = make_string(line_begin, line_end);
-
-    if(reg_lines == "") // the region is an empty line that only contains LF
+    if(this->first_line_number() == this->last_line_number())
     {
-        return std::vector<std::string>{""};
+        return std::vector<std::pair<std::string, std::size_t>>{
+            this->take_line(begin, end)
+        };
     }
 
-    std::istringstream iss(reg_lines);
+    // we have multiple lines. `begin` and `end` points different lines.
+    // that means that there is at least one `LF` between `begin` and `end`.
 
-    std::vector<std::string> lines;
-    std::string line;
-    while(std::getline(iss, line))
+    const auto after_begin = std::distance(begin, this->source_->cend());
+    const auto before_end  = std::distance(this->source_->cbegin(), end);
+
+    const_iterator capped_file_end   = this->source_->cend();
+    const_iterator capped_file_begin = this->source_->cbegin();
+    if(60 < after_begin) {capped_file_end   = std::next(begin, 50);}
+    if(60 < before_end)  {capped_file_begin = std::prev(end,   50);}
+
+    const auto lf = char_type('\n');
+    const auto first_line_end  = std::find(begin, capped_file_end, lf);
+    const auto last_line_begin = std::find(capped_file_begin, end, lf);
+
+    const auto first_line = this->take_line(begin, first_line_end);
+    const auto last_line  = this->take_line(last_line_begin, end);
+
+    if(this->first_line_number() + 1 == this->last_line_number())
     {
-        lines.push_back(line);
+        return std::vector<std::pair<std::string, std::size_t>>{
+            first_line, last_line
+        };
     }
-    return lines;
+    else
+    {
+        return std::vector<std::pair<std::string, std::size_t>>{
+            first_line, std::make_pair("...", 0), last_line
+        };
+    }
 }
 
 } // namespace detail
@@ -5103,7 +5252,34 @@ TOML11_INLINE std::vector<std::string> region::as_lines() const
 namespace toml
 {
 
+//
 // A struct to contain location in a toml file.
+//
+// To reduce memory consumption, it omits unrelated parts of long lines. like:
+//
+// 1. one long line, short region
+// ```
+//    |
+//  1 | ... "foo", "bar", baz, "qux", "foobar", ...
+//    |                   ^-- unknown value
+// ```
+// 2. long region
+// ```
+//    |
+//  1 | array = [ "foo", ... "bar" ]
+//    |         ^^^^^^^^^^^^^^^^^^^^- in this array
+// ```
+// 3. many lines
+//     |
+//   1 | array = [ "foo",
+//     |         ^^^^^^^^
+//     | ...
+//     | ^^^
+//     |
+//  10 | , "bar"]
+//     | ^^^^^^^^- in this array
+// ```
+//
 struct source_location
 {
   public:
@@ -5132,13 +5308,19 @@ struct source_location
 
     std::vector<std::string> const& lines() const noexcept {return line_str_;}
 
+    // for internal use
+    std::size_t first_column_offset() const noexcept {return this->first_offset_;}
+    std::size_t last_column_offset()  const noexcept {return this->last_offset_;}
+
   private:
 
     bool        is_ok_;
     std::size_t first_line_;
-    std::size_t first_column_;
+    std::size_t first_column_; // column num in the actual file
+    std::size_t first_offset_; // column num in the shown line
     std::size_t last_line_;
-    std::size_t last_column_;
+    std::size_t last_column_;  // column num in the actual file
+    std::size_t last_offset_;  // column num in the shown line
     std::size_t length_;
     std::string file_name_;
     std::vector<std::string> line_str_;
@@ -5227,8 +5409,10 @@ TOML11_INLINE source_location::source_location(const detail::region& r)
     : is_ok_(false),
       first_line_(1),
       first_column_(1),
+      first_offset_(1),
       last_line_(1),
       last_column_(1),
+      last_offset_(1),
       length_(0),
       file_name_("unknown file")
 {
@@ -5241,7 +5425,17 @@ TOML11_INLINE source_location::source_location(const detail::region& r)
         this->last_line_    = r.last_line_number();
         this->last_column_  = r.last_column_number();
         this->length_       = r.length();
-        this->line_str_     = r.as_lines();
+
+        const auto lines = r.as_lines();
+        assert( ! lines.empty());
+
+        for(const auto& l : lines)
+        {
+            this->line_str_.push_back(l.first);
+        }
+
+        this->first_offset_ = lines.at(             0).second + 1; // to 1-origin
+        this->last_offset_  = lines.at(lines.size()-1).second + 1;
     }
 }
 
@@ -5352,36 +5546,36 @@ TOML11_INLINE std::string format_location_impl(const std::size_t lnw,
     {
         // when column points LF, it exceeds the size of the first line.
         std::size_t underline_limit = 1;
-        if(loc.first_line().size() < loc.first_column_number())
+        if(loc.first_line().size() < loc.first_column_offset())
         {
             underline_limit = 1;
         }
         else
         {
-            underline_limit = loc.first_line().size() - loc.first_column_number() + 1;
+            underline_limit = loc.first_line().size() - loc.first_column_offset() + 1;
         }
         const auto underline_len = (std::min)(underline_limit, loc.length());
 
         format_line(oss, lnw, loc.first_line_number(), loc.first_line());
-        format_underline(oss, lnw, loc.first_column_number(), underline_len, msg);
+        format_underline(oss, lnw, loc.first_column_offset(), underline_len, msg);
     }
     else if(loc.lines().size() == 2)
     {
         const auto first_underline_len =
-            loc.first_line().size() - loc.first_column_number() + 1;
+            loc.first_line().size() - loc.first_column_offset() + 1;
         format_line(oss, lnw, loc.first_line_number(), loc.first_line());
-        format_underline(oss, lnw, loc.first_column_number(),
+        format_underline(oss, lnw, loc.first_column_offset(),
                 first_underline_len, "");
 
         format_line(oss, lnw, loc.last_line_number(), loc.last_line());
-        format_underline(oss, lnw, 1, loc.last_column_number(), msg);
+        format_underline(oss, lnw, 1, loc.last_column_offset(), msg);
     }
     else if(loc.lines().size() > 2)
     {
         const auto first_underline_len =
-            loc.first_line().size() - loc.first_column_number() + 1;
+            loc.first_line().size() - loc.first_column_offset() + 1;
         format_line(oss, lnw, loc.first_line_number(), loc.first_line());
-        format_underline(oss, lnw, loc.first_column_number(),
+        format_underline(oss, lnw, loc.first_column_offset(),
                 first_underline_len, "and");
 
         if(loc.lines().size() == 3)
@@ -5395,7 +5589,7 @@ TOML11_INLINE std::string format_location_impl(const std::size_t lnw,
             format_empty_line(oss, lnw);
         }
         format_line(oss, lnw, loc.last_line_number(), loc.last_line());
-        format_underline(oss, lnw, 1, loc.last_column_number(), msg);
+        format_underline(oss, lnw, 1, loc.last_column_offset(), msg);
     }
     // if loc is empty, do nothing.
     return oss.str();
@@ -7836,22 +8030,68 @@ void change_region_of_value(basic_value<TC>& dst, const basic_value<TC>& src)
 namespace toml
 {
 
-template<typename Visitor, typename TC>
-cxx::return_type_of_t<Visitor, const typename basic_value<TC>::boolean_type&>
-visit(Visitor&& visitor, const basic_value<TC>& v)
+namespace detail
+{
+
+template<typename F, typename ... Ts>
+using visit_result_t = decltype(std::declval<F>()(std::declval<Ts>().as_boolean() ...));
+
+template<typename F, typename T>
+struct front_binder
+{
+    template<typename ... Args>
+    auto operator()(Args&& ... args) -> decltype(std::declval<F>()(std::declval<T>(), std::forward<Args>(args)...))
+    {
+        return func(std::move(front), std::forward<Args>(args)...);
+    }
+    F func;
+    T front;
+};
+
+template<typename F, typename T>
+front_binder<cxx::remove_cvref_t<F>, cxx::remove_cvref_t<T>>
+bind_front(F&& f, T&& t)
+{
+    return front_binder<cxx::remove_cvref_t<F>, cxx::remove_cvref_t<T>>{
+        std::forward<F>(f), std::forward<T>(t)
+    };
+}
+
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, const basic_value<TC>&, Args...>
+visit_impl(Visitor&& visitor, const basic_value<TC>& v, Args&& ... args);
+
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, basic_value<TC>&, Args...>
+visit_impl(Visitor&& visitor, basic_value<TC>& v, Args&& ... args);
+
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, basic_value<TC>, Args...>
+visit_impl(Visitor&& visitor, basic_value<TC>&& v, Args&& ... args);
+
+
+template<typename Visitor>
+visit_result_t<Visitor> visit_impl(Visitor&& visitor)
+{
+    return visitor();
+}
+
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, basic_value<TC>&, Args...>
+visit_impl(Visitor&& visitor, basic_value<TC>& v, Args&& ... args)
 {
     switch(v.type())
     {
-        case value_t::boolean        : {return visitor(v.as_boolean        ());}
-        case value_t::integer        : {return visitor(v.as_integer        ());}
-        case value_t::floating       : {return visitor(v.as_floating       ());}
-        case value_t::string         : {return visitor(v.as_string         ());}
-        case value_t::offset_datetime: {return visitor(v.as_offset_datetime());}
-        case value_t::local_datetime : {return visitor(v.as_local_datetime ());}
-        case value_t::local_date     : {return visitor(v.as_local_date     ());}
-        case value_t::local_time     : {return visitor(v.as_local_time     ());}
-        case value_t::array          : {return visitor(v.as_array          ());}
-        case value_t::table          : {return visitor(v.as_table          ());}
+        case value_t::boolean        : {return visit_impl(bind_front(visitor, std::ref(v.as_boolean        ())), std::forward<Args>(args)...);}
+        case value_t::integer        : {return visit_impl(bind_front(visitor, std::ref(v.as_integer        ())), std::forward<Args>(args)...);}
+        case value_t::floating       : {return visit_impl(bind_front(visitor, std::ref(v.as_floating       ())), std::forward<Args>(args)...);}
+        case value_t::string         : {return visit_impl(bind_front(visitor, std::ref(v.as_string         ())), std::forward<Args>(args)...);}
+        case value_t::offset_datetime: {return visit_impl(bind_front(visitor, std::ref(v.as_offset_datetime())), std::forward<Args>(args)...);}
+        case value_t::local_datetime : {return visit_impl(bind_front(visitor, std::ref(v.as_local_datetime ())), std::forward<Args>(args)...);}
+        case value_t::local_date     : {return visit_impl(bind_front(visitor, std::ref(v.as_local_date     ())), std::forward<Args>(args)...);}
+        case value_t::local_time     : {return visit_impl(bind_front(visitor, std::ref(v.as_local_time     ())), std::forward<Args>(args)...);}
+        case value_t::array          : {return visit_impl(bind_front(visitor, std::ref(v.as_array          ())), std::forward<Args>(args)...);}
+        case value_t::table          : {return visit_impl(bind_front(visitor, std::ref(v.as_table          ())), std::forward<Args>(args)...);}
         case value_t::empty          : break;
         default: break;
     }
@@ -7859,22 +8099,22 @@ visit(Visitor&& visitor, const basic_value<TC>& v)
             "does not have any valid type.", v.location(), "here"), v.location());
 }
 
-template<typename Visitor, typename TC>
-cxx::return_type_of_t<Visitor, typename basic_value<TC>::boolean_type&>
-visit(Visitor&& visitor, basic_value<TC>& v)
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, const basic_value<TC>&, Args...>
+visit_impl(Visitor&& visitor, const basic_value<TC>& v, Args&& ... args)
 {
     switch(v.type())
     {
-        case value_t::boolean        : {return visitor(v.as_boolean        ());}
-        case value_t::integer        : {return visitor(v.as_integer        ());}
-        case value_t::floating       : {return visitor(v.as_floating       ());}
-        case value_t::string         : {return visitor(v.as_string         ());}
-        case value_t::offset_datetime: {return visitor(v.as_offset_datetime());}
-        case value_t::local_datetime : {return visitor(v.as_local_datetime ());}
-        case value_t::local_date     : {return visitor(v.as_local_date     ());}
-        case value_t::local_time     : {return visitor(v.as_local_time     ());}
-        case value_t::array          : {return visitor(v.as_array          ());}
-        case value_t::table          : {return visitor(v.as_table          ());}
+        case value_t::boolean        : {return visit_impl(bind_front(visitor, std::cref(v.as_boolean        ())), std::forward<Args>(args)...);}
+        case value_t::integer        : {return visit_impl(bind_front(visitor, std::cref(v.as_integer        ())), std::forward<Args>(args)...);}
+        case value_t::floating       : {return visit_impl(bind_front(visitor, std::cref(v.as_floating       ())), std::forward<Args>(args)...);}
+        case value_t::string         : {return visit_impl(bind_front(visitor, std::cref(v.as_string         ())), std::forward<Args>(args)...);}
+        case value_t::offset_datetime: {return visit_impl(bind_front(visitor, std::cref(v.as_offset_datetime())), std::forward<Args>(args)...);}
+        case value_t::local_datetime : {return visit_impl(bind_front(visitor, std::cref(v.as_local_datetime ())), std::forward<Args>(args)...);}
+        case value_t::local_date     : {return visit_impl(bind_front(visitor, std::cref(v.as_local_date     ())), std::forward<Args>(args)...);}
+        case value_t::local_time     : {return visit_impl(bind_front(visitor, std::cref(v.as_local_time     ())), std::forward<Args>(args)...);}
+        case value_t::array          : {return visit_impl(bind_front(visitor, std::cref(v.as_array          ())), std::forward<Args>(args)...);}
+        case value_t::table          : {return visit_impl(bind_front(visitor, std::cref(v.as_table          ())), std::forward<Args>(args)...);}
         case value_t::empty          : break;
         default: break;
     }
@@ -7882,27 +8122,36 @@ visit(Visitor&& visitor, basic_value<TC>& v)
             "does not have any valid type.", v.location(), "here"), v.location());
 }
 
-template<typename Visitor, typename TC>
-cxx::return_type_of_t<Visitor, typename basic_value<TC>::boolean_type&&>
-visit(Visitor&& visitor, basic_value<TC>&& v)
+template<typename Visitor, typename TC, typename ... Args>
+visit_result_t<Visitor, basic_value<TC>, Args...>
+visit_impl(Visitor&& visitor, basic_value<TC>&& v, Args&& ... args)
 {
     switch(v.type())
     {
-        case value_t::boolean        : {return visitor(std::move(v.as_boolean        ()));}
-        case value_t::integer        : {return visitor(std::move(v.as_integer        ()));}
-        case value_t::floating       : {return visitor(std::move(v.as_floating       ()));}
-        case value_t::string         : {return visitor(std::move(v.as_string         ()));}
-        case value_t::offset_datetime: {return visitor(std::move(v.as_offset_datetime()));}
-        case value_t::local_datetime : {return visitor(std::move(v.as_local_datetime ()));}
-        case value_t::local_date     : {return visitor(std::move(v.as_local_date     ()));}
-        case value_t::local_time     : {return visitor(std::move(v.as_local_time     ()));}
-        case value_t::array          : {return visitor(std::move(v.as_array          ()));}
-        case value_t::table          : {return visitor(std::move(v.as_table          ()));}
+        case value_t::boolean        : {return visit_impl(bind_front(visitor, std::move(v.as_boolean        ())), std::forward<Args>(args)...);}
+        case value_t::integer        : {return visit_impl(bind_front(visitor, std::move(v.as_integer        ())), std::forward<Args>(args)...);}
+        case value_t::floating       : {return visit_impl(bind_front(visitor, std::move(v.as_floating       ())), std::forward<Args>(args)...);}
+        case value_t::string         : {return visit_impl(bind_front(visitor, std::move(v.as_string         ())), std::forward<Args>(args)...);}
+        case value_t::offset_datetime: {return visit_impl(bind_front(visitor, std::move(v.as_offset_datetime())), std::forward<Args>(args)...);}
+        case value_t::local_datetime : {return visit_impl(bind_front(visitor, std::move(v.as_local_datetime ())), std::forward<Args>(args)...);}
+        case value_t::local_date     : {return visit_impl(bind_front(visitor, std::move(v.as_local_date     ())), std::forward<Args>(args)...);}
+        case value_t::local_time     : {return visit_impl(bind_front(visitor, std::move(v.as_local_time     ())), std::forward<Args>(args)...);}
+        case value_t::array          : {return visit_impl(bind_front(visitor, std::move(v.as_array          ())), std::forward<Args>(args)...);}
+        case value_t::table          : {return visit_impl(bind_front(visitor, std::move(v.as_table          ())), std::forward<Args>(args)...);}
         case value_t::empty          : break;
         default: break;
     }
     throw type_error(format_error("[error] toml::visit: toml::basic_value "
             "does not have any valid type.", v.location(), "here"), v.location());
+}
+
+} // detail
+
+template<typename Visitor, typename ... Args>
+detail::visit_result_t<Visitor, Args...>
+visit(Visitor&& visitor, Args&& ... args)
+{
+    return detail::visit_impl(std::forward<Visitor>(visitor), std::forward<Args>(args)...);
 }
 
 } // toml
@@ -8203,77 +8452,53 @@ namespace detail
 // ----------------------------------------------------------------------------
 // check if type T has all the needed member types
 
-struct has_comment_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::comment_type*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_comment_type: std::false_type{};
 template<typename T>
-using has_comment_type = decltype(has_comment_type_impl::check<T>(nullptr));
+struct has_comment_type<T, cxx::void_t<typename T::comment_type>>: std::true_type{};
 
-struct has_integer_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::integer_type*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_integer_type: std::false_type{};
 template<typename T>
-using has_integer_type = decltype(has_integer_type_impl::check<T>(nullptr));
+struct has_integer_type<T, cxx::void_t<typename T::integer_type>>: std::true_type{};
 
-struct has_floating_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::floating_type*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_floating_type: std::false_type{};
 template<typename T>
-using has_floating_type = decltype(has_floating_type_impl::check<T>(nullptr));
+struct has_floating_type<T, cxx::void_t<typename T::floating_type>>: std::true_type{};
 
-struct has_string_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::string_type*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_string_type: std::false_type{};
 template<typename T>
-using has_string_type = decltype(has_string_type_impl::check<T>(nullptr));
+struct has_string_type<T, cxx::void_t<typename T::string_type>>: std::true_type{};
 
-struct has_array_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::template array_type<int>*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_array_type: std::false_type{};
 template<typename T>
-using has_array_type = decltype(has_array_type_impl::check<T>(nullptr));
+struct has_array_type<T, cxx::void_t<typename T::template array_type<int>>>: std::true_type{};
 
-struct has_table_type_impl
-{
-    template<typename T> static std::true_type  check(typename T::template table_type<int, int>*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_table_type: std::false_type{};
 template<typename T>
-using has_table_type = decltype(has_table_type_impl::check<T>(nullptr));
+struct has_table_type<T, cxx::void_t<typename T::template table_type<int, int>>>: std::true_type{};
 
-struct has_parse_int_impl
-{
-    template<typename T> static std::true_type  check(decltype(std::declval<T>().parse_int(
-            std::declval<const std::string&>(),
-            std::declval<const source_location>(),
-            std::declval<const std::uint8_t>()
-        ))*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_parse_int: std::false_type{};
 template<typename T>
-using has_parse_int = decltype(has_parse_int_impl::check<T>(nullptr));
+struct has_parse_int<T, cxx::void_t<decltype(std::declval<T>().parse_int(
+        std::declval<std::string const&>(),
+        std::declval<::toml::source_location const&>(),
+        std::declval<std::uint8_t>()
+    ))>>: std::true_type{};
 
-struct has_parse_float_impl
-{
-    template<typename T> static std::true_type  check(decltype(std::declval<T>().parse_float(
-            std::declval<const std::string&>(),
-            std::declval<const source_location>(),
-            std::declval<const bool>()
-        ))*);
-    template<typename T> static std::false_type check(...);
-};
+template<typename T, typename U = void>
+struct has_parse_float: std::false_type{};
 template<typename T>
-using has_parse_float = decltype(has_parse_float_impl::check<T>(nullptr));
+struct has_parse_float<T, cxx::void_t<decltype(std::declval<T>().parse_float(
+        std::declval<std::string const&>(),
+        std::declval<::toml::source_location const&>(),
+        std::declval<bool>()
+    ))>>: std::true_type{};
 
 template<typename T>
 using is_type_config = cxx::conjunction<
@@ -9029,6 +9254,95 @@ find(basic_value<TC>&& v, const std::size_t idx)
 }
 
 // --------------------------------------------------------------------------
+// find<optional<T>>
+
+#if defined(TOML11_HAS_OPTIONAL)
+template<typename T, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(const basic_value<TC>& v, const typename basic_value<TC>::key_type& ky)
+{
+    if(v.contains(ky))
+    {
+        return ::toml::get<typename T::value_type>(v.at(ky));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(basic_value<TC>& v, const typename basic_value<TC>::key_type& ky)
+{
+    if(v.contains(ky))
+    {
+        return ::toml::get<typename T::value_type>(v.at(ky));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(basic_value<TC>&& v, const typename basic_value<TC>::key_type& ky)
+{
+    if(v.contains(ky))
+    {
+        return ::toml::get<typename T::value_type>(std::move(v.at(ky)));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename K, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K>::value, T>
+find(const basic_value<TC>& v, const K& k)
+{
+    if(static_cast<std::size_t>(k) < v.size())
+    {
+        return ::toml::get<typename T::value_type>(v.at(static_cast<std::size_t>(k)));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename K, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K>::value, T>
+find(basic_value<TC>& v, const K& k)
+{
+    if(static_cast<std::size_t>(k) < v.size())
+    {
+        return ::toml::get<typename T::value_type>(v.at(static_cast<std::size_t>(k)));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename K, typename TC>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K>::value, T>
+find(basic_value<TC>&& v, const K& k)
+{
+    if(static_cast<std::size_t>(k) < v.size())
+    {
+        return ::toml::get<typename T::value_type>(std::move(v.at(static_cast<std::size_t>(k))));
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+#endif // optional
+
+// --------------------------------------------------------------------------
 // toml::find(toml::value, toml::key, Ts&& ... keys)
 
 namespace detail
@@ -9118,6 +9432,88 @@ find(basic_value<TC>&& v, const K1& k1, const K2& k2, const Ks& ... ks)
 {
     return find<T>(std::move(v.at(detail::key_cast<TC>(k1))), detail::key_cast<TC>(k2), ks...);
 }
+
+#if defined(TOML11_HAS_OPTIONAL)
+template<typename T, typename TC, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(const basic_value<TC>& v, const typename basic_value<TC>::key_type& k1, const K2& k2, const Ks& ... ks)
+{
+    if(v.contains(k1))
+    {
+        return find<T>(v.at(k1), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+template<typename T, typename TC, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(basic_value<TC>& v, const typename basic_value<TC>::key_type& k1, const K2& k2, const Ks& ... ks)
+{
+    if(v.contains(k1))
+    {
+        return find<T>(v.at(k1), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+template<typename T, typename TC, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value, T>
+find(basic_value<TC>&& v, const typename basic_value<TC>::key_type& k1, const K2& k2, const Ks& ... ks)
+{
+    if(v.contains(k1))
+    {
+        return find<T>(v.at(k1), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+
+template<typename T, typename TC, typename K1, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K1>::value, T>
+find(const basic_value<TC>& v, const K1& k1, const K2& k2, const Ks& ... ks)
+{
+    if(static_cast<std::size_t>(k1) < v.size())
+    {
+        return find<T>(v.at(static_cast<std::size_t>(k1)), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+template<typename T, typename TC, typename K1, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K1>::value, T>
+find(basic_value<TC>& v, const K1& k1, const K2& k2, const Ks& ... ks)
+{
+    if(static_cast<std::size_t>(k1) < v.size())
+    {
+        return find<T>(v.at(static_cast<std::size_t>(k1)), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+template<typename T, typename TC, typename K1, typename K2, typename ... Ks>
+cxx::enable_if_t<detail::is_std_optional<T>::value && std::is_integral<K1>::value, T>
+find(basic_value<TC>&& v, const K1& k1, const K2& k2, const Ks& ... ks)
+{
+    if(static_cast<std::size_t>(k1) < v.size())
+    {
+        return find<T>(v.at(static_cast<std::size_t>(k1)), detail::key_cast<TC>(k2), ks...);
+    }
+    else
+    {
+        return std::nullopt;
+    }
+}
+#endif // optional
 
 // ===========================================================================
 // find_or<T>(value, key, fallback)
@@ -9298,6 +9694,37 @@ T find_or(const basic_value<TC>& v, const K1& k1, const K2& k2, const K3& k3, co
     catch(...)
     {
         return static_cast<T>(detail::last_one(k3, keys...));
+    }
+}
+
+// ===========================================================================
+// find_or_default<T>(value, key)
+
+template<typename T, typename TC, typename K>
+cxx::enable_if_t<std::is_default_constructible<T>::value, T>
+find_or_default(const basic_value<TC>& v, K&& k) noexcept(std::is_nothrow_default_constructible<T>::value)
+{
+    try
+    {
+        return ::toml::get<T>(v.at(detail::key_cast<TC>(std::forward<K>(k))));
+    }
+    catch(...)
+    {
+        return T();
+    }
+}
+
+template<typename T, typename TC, typename K1, typename ... Ks>
+cxx::enable_if_t<std::is_default_constructible<T>::value, T>
+find_or_default(const basic_value<TC>& v, K1&& k1, Ks&& ... keys) noexcept(std::is_nothrow_default_constructible<T>::value)
+{
+    try
+    {
+        return find_or_default<T>(v.at(std::forward<K1>(k1)), std::forward<Ks>(keys)...);
+    }
+    catch(...)
+    {
+        return T();
     }
 }
 
@@ -15369,7 +15796,7 @@ parse_impl(std::vector<location::char_type> cs, std::string fname, const spec& s
     // skip BOM if found
     if(loc.source()->size() >= 3)
     {
-        auto first = loc.get_location();
+        auto first = loc;
 
         const auto c0 = loc.current(); loc.advance();
         const auto c1 = loc.current(); loc.advance();
@@ -15378,7 +15805,7 @@ parse_impl(std::vector<location::char_type> cs, std::string fname, const spec& s
         const auto bom_found = (c0 == 0xEF) && (c1 == 0xBB) && (c2 == 0xBF);
         if( ! bom_found)
         {
-            loc.set_location(first);
+            loc = first;
         }
     }
 

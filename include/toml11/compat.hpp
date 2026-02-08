@@ -386,6 +386,35 @@ using return_type_of_t = typename std::result_of<F(Args...)>::type;
 } // cxx
 } // toml
 
+// ---------------------------------------------------------------------------
+// C++17 void_t
+
+#if TOML11_CPLUSPLUS_STANDARD_VERSION >= TOML11_CXX17_VALUE
+#  if defined(__cpp_lib_void_t)
+#    if __cpp_lib_void_t >= 201411L
+#      define TOML11_HAS_STD_VOID_T 1
+#    endif
+#  endif
+#endif
+
+namespace toml
+{
+namespace cxx
+{
+#if defined(TOML11_HAS_STD_VOID_T)
+
+using std::void_t;
+
+#else
+
+template<typename ...>
+using void_t = void;
+
+#endif // TOML11_HAS_STD_VOID_T
+
+} // cxx
+} // toml
+
 // ----------------------------------------------------------------------------
 // (subset of) source_location
 
@@ -434,9 +463,19 @@ using source_location = std::source_location;
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #elif defined(TOML11_HAS_EXPERIMENTAL_SOURCE_LOCATION)
@@ -449,9 +488,19 @@ using source_location = std::experimental::source_location;
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #elif defined(TOML11_HAS_BUILTIN_FILE_LINE)
@@ -483,9 +532,19 @@ struct source_location
 
 inline std::string to_string(const source_location& loc)
 {
-    return std::string(" at line ") + std::to_string(loc.line()) +
-           std::string(" in file ") + std::string(loc.file_name());
+    const char* fname = loc.file_name();
+    if(fname)
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in file ") + std::string(fname);
+    }
+    else
+    {
+        return std::string(" at line ") + std::to_string(loc.line()) +
+               std::string(" in unknown file");
+    }
 }
+
 } // cxx
 } // toml
 #else // no builtin
